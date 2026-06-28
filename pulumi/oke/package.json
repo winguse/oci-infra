@@ -1,0 +1,12 @@
+{
+    "name": "oke",
+    "main": "index.ts",
+    "devDependencies": {
+        "@types/node": "^18.19.130",
+        "typescript": "^5.9.3"
+    },
+    "dependencies": {
+        "@pulumi/oci": "^4.16.0",
+        "@pulumi/pulumi": "^3.113.0"
+    }
+}

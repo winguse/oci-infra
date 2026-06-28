@@ -1,0 +1,35 @@
+coderDomain: {{ .Values.coderDomain | quote }}
+
+tls:
+  commonWildcardDomain: {{ .Values.tls.commonWildcardDomain | quote }}
+  commonSecretName: {{ .Values.tls.commonSecretName | quote }}
+  coderWildcardDomain: {{ .Values.tls.coderWildcardDomain | quote }}
+  coderSecretName: {{ .Values.tls.coderSecretName | quote }}
+
+acmeEmail: {{ .Values.acmeEmail | quote }}
+acmeServer: {{ .Values.acmeServer | quote }}
+
+acmeDNS:
+  host: {{ .Values.acmeDNS.host | quote }}
+  secretName: {{ .Values.acmeDNS.secretName | quote }}
+  secretKey: {{ .Values.acmeDNS.secretKey | quote }}
+
+postgresql:
+  auth:
+    username: {{ .Values.postgresql.auth.username | quote }}
+    database: {{ .Values.postgresql.auth.database | quote }}
+
+{{- if .Values.coder }}
+coder:
+  oidc:
+    issuerUrl: {{ .Values.coder.oidc.issuerUrl | default "" | quote }}
+    clientId: {{ .Values.coder.oidc.clientId | default "" | quote }}
+    clientSecret: {{ .Values.coder.oidc.clientSecret | default "" | quote }}
+    emailDomain: {{ .Values.coder.oidc.emailDomain | default "" | quote }}
+{{- end }}
+
+cloudflare:
+  tunnelToken: {{ .Values.cloudflare.tunnelToken | quote }}
+  coderDomain: {{ .Values.cloudflare.coderDomain | quote }}
+  coderWildcardDomain: {{ .Values.cloudflare.coderWildcardDomain | quote }}
+

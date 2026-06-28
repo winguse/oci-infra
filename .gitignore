@@ -1,0 +1,24 @@
+# Secrets and credentials
+.env
+
+# TLS / PKI
+*.pem
+*.key
+*.crt
+*.cert
+*.p12
+*.pfx
+
+# Kubeconfig
+k3s/
+kubeconfig
+kubeconfig.yaml
+*.kubeconfig
+
+# Helmfile cache and temp
+.helmfile/
+helmfile.lock
+
+# OS
+.DS_Store
+Thumbs.db

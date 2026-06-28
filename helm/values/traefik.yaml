@@ -1,0 +1,16 @@
+ports:
+  web:
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+
+# this only for OKE (Oracle Cloud Kubernetes Service)
+service:
+  annotations:
+    service.beta.kubernetes.io/oci-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/oci-load-balancer-shape: "flexible"
+    service.beta.kubernetes.io/oci-load-balancer-shape-flex-min: "10"
+    service.beta.kubernetes.io/oci-load-balancer-shape-flex-max: "10"

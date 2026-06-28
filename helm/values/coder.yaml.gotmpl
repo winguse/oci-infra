@@ -1,0 +1,56 @@
+coder:
+  service:
+    type: ClusterIP
+
+  resources:
+    requests:
+      cpu: 50m
+
+  env:
+    - name: CODER_DISABLE_NETWORK_TELEMETRY
+      value: 'true'
+    - name: CODER_PG_CONNECTION_URL
+      valueFrom:
+        secretKeyRef:
+          name: coder-db-url
+          key: url
+    - name: CODER_OAUTH2_GITHUB_DEFAULT_PROVIDER_ENABLE
+      value: "false"
+    - name: CODER_ACCESS_URL
+      value: {{ printf "https://%s" .Values.coderDomain | quote }}
+    - name: CODER_WILDCARD_ACCESS_URL
+      value: {{ printf "%s" .Values.tls.coderWildcardDomain | quote }}
+    - name: CODER_OIDC_SCOPES
+      value: 'openid,profile,email,offline_access'
+    - name: CODER_OIDC_EMAIL_FIELD
+      value: 'email'
+    - name: CODER_OIDC_USERNAME_FIELD
+      value: 'preferred_username'
+    - name: CODER_OIDC_SIGN_IN_TEXT
+      value: 'Sign in with Authelia'
+    - name: CODER_OIDC_ICON_URL
+      value: 'https://www.authelia.com/images/branding/logo-cropped.png'
+{{- if and .Values.coder .Values.coder.oidc .Values.coder.oidc.issuerUrl }}
+{{- $oidc := .Values.coder.oidc }}
+    - name: CODER_OIDC_ISSUER_URL
+      value: {{ $oidc.issuerUrl | quote }}
+    - name: CODER_OIDC_CLIENT_ID
+      value: {{ $oidc.clientId | quote }}
+    - name: CODER_OIDC_CLIENT_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: coder-oidc
+          key: client-secret
+{{- if $oidc.emailDomain }}
+    - name: CODER_OIDC_EMAIL_DOMAIN
+      value: {{ $oidc.emailDomain | quote }}
+{{- end }}
+{{- if $oidc.ignoreEmailVerified }}
+    - name: CODER_OIDC_IGNORE_EMAIL_VERIFIED
+      value: "true"
+{{- end }}
+{{- if $oidc.disablePasswordAuth }}
+    - name: CODER_DISABLE_PASSWORD_AUTH
+      value: "true"
+{{- end }}
+{{- end }}

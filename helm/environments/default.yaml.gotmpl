@@ -1,0 +1,34 @@
+coderDomain: {{ env "CODER_DOMAIN" | default "coder.example.com" }}
+tls:
+  commonWildcardDomain: {{ env "COMMON_TLS_WILDCARD_DOMAIN" | default "*.level2.example.com" | quote }}
+  commonSecretName: common-tls
+  coderWildcardDomain: {{ env "CODER_TLS_WILDCARD_DOMAIN" | default "*.coder.level2.example.com" | quote }}
+  coderSecretName: coder-tls
+acmeEmail: {{ env "ACME_EMAIL" | default "admin@example.com" | quote }}
+acmeServer: https://acme-v02.api.letsencrypt.org/directory
+
+postgresql:
+  auth:
+    username: {{ env "POSTGRES_USER" | default "coder" | quote }}
+    password: {{ env "POSTGRES_PASSWORD" | default "coder" | quote }}
+    database: {{ env "POSTGRES_DATABASE" | default "coder" | quote }}
+
+acmeDNS:
+  host: {{ env "ACME_DNS_HOST" | default "https://auth.example.com" | quote }}
+  secretName: acme-dns
+  secretKey: acmedns.json
+
+coder:
+  oidc:
+    issuerUrl: {{ env "CODER_OIDC_ISSUER_URL" | default "" | quote }}
+    clientId: {{ env "CODER_OIDC_CLIENT_ID" | default "" | quote }}
+    clientSecret: {{ env "CODER_OIDC_CLIENT_SECRET" | default "" | quote }}
+    emailDomain: {{ env "CODER_OIDC_EMAIL_DOMAIN" | default "" | quote }}
+    ignoreEmailVerified: {{ eq (env "CODER_OIDC_IGNORE_EMAIL_VERIFIED" | default "false") "true" }}
+    disablePasswordAuth: {{ eq (env "CODER_DISABLE_PASSWORD_AUTH" | default "false") "true" }}
+
+cloudflare:
+  tunnelToken: {{ env "CLOUDFLARE_TUNNEL_TOKEN" | default "" | quote }}
+  coderDomain: {{ env "CLOUDFLARE_CODER_DOMAIN" | default "" | quote }}
+  coderWildcardDomain: {{ env "CLOUDFLARE_CODER_TLS_WILDCARD_DOMAIN" | default "" | quote }}
+

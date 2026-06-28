@@ -1,0 +1,13 @@
+config:
+  # The OCI compartment OCID where the resources will be created
+  oke:compartmentId: "ocid1.tenancy.oc1..aaaaaaaa7ahciiwlyr6wrqfg5rl36mhepxka3usdhjvg53oyuqlvt6dxh7lq"
+  # GitHub username to download SSH keys from
+  oke:githubUsername: "winguse"
+  # Instance shape for the worker nodes (A1 Flex)
+  oke:shape: "VM.Standard.A1.Flex"
+  oke:ocpus: "1"
+  oke:memoryInGbs: "6"
+  # Initial/minimum size of the node pool
+  oke:nodePoolSize: "1"
+  # OCI provider configuration (e.g. region)
+  oci:region: "us-sanjose-1"

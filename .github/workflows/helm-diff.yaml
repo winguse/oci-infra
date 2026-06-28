@@ -1,0 +1,41 @@
+name: helm-diff
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        required: true
+        type: choice
+        options:
+          - OKE
+
+jobs:
+  helm-diff:
+    name: Helmfile diff
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write vars
+        shell: bash
+        run: |
+          printf '%s\n' '${{ vars.ENV_VARS }}' | sed 's/\r$//' >> "$GITHUB_ENV"
+
+      - name: Set up kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG_B64 }}" | base64 -d > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+      - name: Run Helmfile Diff
+        uses: helmfile/helmfile-action@v2.4.5
+        env:
+          CODER_OIDC_CLIENT_SECRET: ${{ secrets.CODER_OIDC_CLIENT_SECRET }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        with:
+          helm-version: "latest"
+          helmfile-version: "latest"
+          helmfile-args: diff
+          helmfile-workdirectory: helm

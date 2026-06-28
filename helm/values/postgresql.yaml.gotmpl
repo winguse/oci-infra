@@ -1,0 +1,11 @@
+auth:
+  username: {{ .Values.postgresql.auth.username | quote }}
+  password: {{ .Values.postgresql.auth.password | quote }}
+  database: {{ .Values.postgresql.auth.database | quote }}
+
+primary:
+  persistence:
+    enabled: true
+    size: 10Gi
+
+architecture: standalone

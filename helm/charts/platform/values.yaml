@@ -1,0 +1,7 @@
+ingress:
+  className: traefik
+
+cloudflare:
+  tunnelToken: ""
+  coderDomain: ""
+  coderWildcardDomain: ""
