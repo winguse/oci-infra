@@ -1,0 +1,6 @@
+apiVersion: v2
+name: micro-nfs
+description: NFS Server Provisioner for OKE "Storage over Storage" pattern to bypass the 50GB Block Volume minimum limit.
+type: application
+version: 0.1.0
+appVersion: "v4.0.8"

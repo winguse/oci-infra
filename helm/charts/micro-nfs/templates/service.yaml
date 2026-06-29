@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "micro-nfs.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "micro-nfs.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - name: nfs
+      port: {{ .Values.service.ports.nfs }}
+      targetPort: nfs
+    - name: nfs-udp
+      port: {{ .Values.service.ports.nfsUdp }}
+      targetPort: nfs-udp
+      protocol: UDP
+    - name: nlockmgr
+      port: {{ .Values.service.ports.nlockmgr }}
+      targetPort: nlockmgr
+    - name: nlockmgr-udp
+      port: {{ .Values.service.ports.nlockmgrUdp }}
+      targetPort: nlockmgr-udp
+      protocol: UDP
+    - name: mountd
+      port: {{ .Values.service.ports.mountd }}
+      targetPort: mountd
+    - name: mountd-udp
+      port: {{ .Values.service.ports.mountdUdp }}
+      targetPort: mountd-udp
+      protocol: UDP
+    - name: rquotad
+      port: {{ .Values.service.ports.rquotad }}
+      targetPort: rquotad
+    - name: rquotad-udp
+      port: {{ .Values.service.ports.rquotadUdp }}
+      targetPort: rquotad-udp
+      protocol: UDP
+    - name: rpcbind
+      port: {{ .Values.service.ports.rpcbind }}
+      targetPort: rpcbind
+    - name: rpcbind-udp
+      port: {{ .Values.service.ports.rpcbindUdp }}
+      targetPort: rpcbind-udp
+      protocol: UDP
+    - name: statd
+      port: {{ .Values.service.ports.statd }}
+      targetPort: statd
+    - name: statd-udp
+      port: {{ .Values.service.ports.statdUdp }}
+      targetPort: statd-udp
+      protocol: UDP
+  selector:
+    {{- include "micro-nfs.selectorLabels" . | nindent 4 }}

@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "micro-nfs.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "micro-nfs.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ include "micro-nfs.fullname" . | quote }}
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "micro-nfs.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "micro-nfs.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "micro-nfs.serviceAccountName" . }}
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: nfs-provisioner
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: nfs
+              containerPort: {{ .Values.service.ports.nfs }}
+            - name: nfs-udp
+              containerPort: {{ .Values.service.ports.nfsUdp }}
+              protocol: UDP
+            - name: nlockmgr
+              containerPort: {{ .Values.service.ports.nlockmgr }}
+            - name: nlockmgr-udp
+              containerPort: {{ .Values.service.ports.nlockmgrUdp }}
+              protocol: UDP
+            - name: mountd
+              containerPort: {{ .Values.service.ports.mountd }}
+            - name: mountd-udp
+              containerPort: {{ .Values.service.ports.mountdUdp }}
+              protocol: UDP
+            - name: rquotad
+              containerPort: {{ .Values.service.ports.rquotad }}
+            - name: rquotad-udp
+              containerPort: {{ .Values.service.ports.rquotadUdp }}
+              protocol: UDP
+            - name: rpcbind
+              containerPort: {{ .Values.service.ports.rpcbind }}
+            - name: rpcbind-udp
+              containerPort: {{ .Values.service.ports.rpcbindUdp }}
+              protocol: UDP
+            - name: statd
+              containerPort: {{ .Values.service.ports.statd }}
+            - name: statd-udp
+              containerPort: {{ .Values.service.ports.statdUdp }}
+              protocol: UDP
+          securityContext:
+            capabilities:
+              add:
+                - DAC_READ_SEARCH
+                - SYS_RESOURCE
+          args:
+            - "-provisioner={{ .Values.storageClass.provisionerName }}"
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: SERVICE_NAME
+              value: {{ include "micro-nfs.fullname" . | quote }}
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: export-volume
+              mountPath: /export
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: export-volume
+          persistentVolumeClaim:
+            claimName: {{ include "micro-nfs.fullname" . }}-backing

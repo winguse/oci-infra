@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "micro-nfs.fullname" . }}-backing
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "micro-nfs.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    {{- toYaml .Values.backingStorage.accessModes | nindent 4 }}
+  resources:
+    requests:
+      storage: {{ .Values.backingStorage.size | quote }}
+  {{- if .Values.backingStorage.storageClassName }}
+  storageClassName: {{ .Values.backingStorage.storageClassName | quote }}
+  {{- end }}

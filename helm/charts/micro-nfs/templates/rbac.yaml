@@ -1,0 +1,73 @@
+{{- if .Values.rbac.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "micro-nfs.fullname" . }}-runner
+  labels:
+    {{- include "micro-nfs.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "watch", "update"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["services", "endpoints"]
+    verbs: ["get"]
+  {{- if (.Capabilities.APIVersions.Has "policy/v1beta1/PodSecurityPolicy") }}
+  - apiGroups: ["policy"]
+    resources: ["podsecuritypolicies"]
+    resourceNames: [{{ include "micro-nfs.fullname" . | quote }}]
+    verbs: ["use"]
+  {{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "micro-nfs.fullname" . }}-run
+  labels:
+    {{- include "micro-nfs.labels" . | nindent 4 }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "micro-nfs.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: {{ include "micro-nfs.fullname" . }}-runner
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "micro-nfs.fullname" . }}-leader-locking
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "micro-nfs.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "micro-nfs.fullname" . }}-leader-locking
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "micro-nfs.labels" . | nindent 4 }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "micro-nfs.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: Role
+  name: {{ include "micro-nfs.fullname" . }}-leader-locking
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}

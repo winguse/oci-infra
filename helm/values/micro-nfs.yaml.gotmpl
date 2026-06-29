@@ -1,0 +1,8 @@
+backingStorage:
+  size: {{ .Values.microNfs.backingStorage.size | quote }}
+  storageClassName: {{ .Values.microNfs.backingStorage.storageClassName | quote }}
+
+storageClass:
+  name: {{ .Values.microNfs.storageClass.name | quote }}
+  isDefault: {{ .Values.microNfs.storageClass.isDefault }}
+

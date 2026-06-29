@@ -32,3 +32,12 @@ cloudflare:
   coderDomain: {{ env "CLOUDFLARE_CODER_DOMAIN" | default "" | quote }}
   coderWildcardDomain: {{ env "CLOUDFLARE_CODER_TLS_WILDCARD_DOMAIN" | default "" | quote }}
 
+microNfs:
+  backingStorage:
+    size: {{ env "MICRO_NFS_BACKING_SIZE" | default "100Gi" | quote }}
+    storageClassName: {{ env "MICRO_NFS_STORAGE_CLASS" | default "oci-bv" | quote }}
+  storageClass:
+    name: {{ env "MICRO_NFS_CLASS_NAME" | default "micro-nfs" | quote }}
+    isDefault: {{ eq (env "MICRO_NFS_IS_DEFAULT" | default "true") "true" }}
+
+

@@ -56,6 +56,9 @@ releases:
       - values/postgresql.yaml.gotmpl
     needs:
       - cert-manager/cert-manager
+      - kube-system/micro-nfs
+
+
 
   - name: platform
     namespace: coder
@@ -75,3 +78,10 @@ releases:
     needs:
       - platform
       - postgresql
+
+  - name: micro-nfs
+    namespace: kube-system
+    chart: ./charts/micro-nfs
+    values:
+      - values/micro-nfs.yaml.gotmpl
+

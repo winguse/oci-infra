@@ -1,0 +1,78 @@
+# Default values for micro-nfs.
+# This is a YAML-formatted file.
+
+replicaCount: 1
+
+image:
+  repository: registry.k8s.io/sig-storage/nfs-provisioner
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "v4.0.8"
+
+# The name of the custom StorageClass to create
+storageClass:
+  name: micro-nfs
+  # The provisioner name that matches the one passed to nfs-provisioner container
+  provisionerName: oke.oracle.com/micro-nfs
+  # reclaimPolicy can be Delete or Retain
+  reclaimPolicy: Delete
+  # volumeBindingMode can be Immediate or WaitForFirstConsumer
+  volumeBindingMode: Immediate
+  # Whether to make this the default storage class for the cluster
+  isDefault: true
+
+  # Mount options for the custom storage class
+  mountOptions:
+    - vers=4.1
+
+# Backing Storage Claim configuration (the underlying OCI Block Volume)
+backingStorage:
+  # Size of the backing OCI block volume (hard minimum is 50Gi, defaulted to 100Gi)
+  size: 100Gi
+  # The OKE cluster's block storage class to request the 100Gi volume
+  storageClassName: oci-bv
+  # Access modes for backing storage, must be ReadWriteOnce for OCI Block Volumes
+  accessModes:
+    - ReadWriteOnce
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+rbac:
+  # Specifies whether RBAC resources should be created
+  create: true
+
+service:
+  type: ClusterIP
+  # Internal ports configuration
+  ports:
+    nfs: 2049
+    nfsUdp: 2049
+    nlockmgr: 32803
+    nlockmgrUdp: 32803
+    mountd: 20048
+    mountdUdp: 20048
+    rquotad: 875
+    rquotadUdp: 875
+    rpcbind: 111
+    rpcbindUdp: 111
+    statd: 662
+    statdUdp: 662
+
+resources: {}
+  # limits:
+  #   cpu: 500m
+  #   memory: 512Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
