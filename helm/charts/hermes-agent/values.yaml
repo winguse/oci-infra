@@ -28,6 +28,14 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
+rbac:
+  # Specifies whether RBAC resources should be created
+  create: true
+  # Name of the role to create and bind
+  roleName: "hermes-agent-role"
+  # Name of the playground namespace to create and grant permissions in
+  playgroundNamespace: "hermes-playground"
+
 podAnnotations: {}
 
 podSecurityContext: {}
