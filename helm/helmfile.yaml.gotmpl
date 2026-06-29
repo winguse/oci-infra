@@ -85,3 +85,11 @@ releases:
     values:
       - values/micro-nfs.yaml.gotmpl
 
+  - name: hermes-agent
+    namespace: hermes
+    createNamespace: true
+    chart: ./charts/hermes-agent
+    values:
+      - values/hermes-agent.yaml.gotmpl
+    needs:
+      - coder/platform

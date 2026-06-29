@@ -1,0 +1,41 @@
+ingress:
+  enabled: true
+  className: {{ dig "ingress" "className" "traefik" .Values | quote }}
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: {{ .Values.hermes.domain | quote }}
+      paths:
+        - path: /
+          pathType: Prefix
+          portType: dashboard
+  tls:
+    - secretName: {{ .Values.tls.commonSecretName | quote }}
+      hosts:
+        - {{ .Values.hermes.domain | quote }}
+
+existingSecret: "hermes-agent-secrets"
+
+env:
+  HERMES_DASHBOARD: {{ if .Values.hermes.dashboard.enabled }}"1"{{ else }}"0"{{ end }}
+  HERMES_DASHBOARD_HOST: "0.0.0.0"
+  HERMES_DASHBOARD_PORT: "9119"
+  API_SERVER_ENABLED: {{ if .Values.hermes.apiServer.enabled }}"true"{{ else }}"false"{{ end }}
+  API_SERVER_HOST: "0.0.0.0"
+  API_SERVER_PORT: "8642"
+  API_SERVER_CORS_ORIGINS: "*"
+
+
+
+
+
+  # Authelia OIDC Configs
+  HERMES_DASHBOARD_PUBLIC_URL: {{ .Values.hermes.dashboard.publicUrl | quote }}
+  HERMES_DASHBOARD_OIDC_ISSUER: {{ .Values.hermes.dashboard.oidc.issuer | quote }}
+  HERMES_DASHBOARD_OIDC_CLIENT_ID: {{ .Values.hermes.dashboard.oidc.clientId | quote }}
+  HERMES_DASHBOARD_OIDC_SCOPES: {{ .Values.hermes.dashboard.oidc.scopes | quote }}
+
+persistence:
+  enabled: true
+  size: 10Gi
+

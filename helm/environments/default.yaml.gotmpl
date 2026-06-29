@@ -41,3 +41,16 @@ microNfs:
     isDefault: {{ eq (env "MICRO_NFS_IS_DEFAULT" | default "true") "true" }}
 
 
+hermes:
+  domain: {{ env "HERMES_DOMAIN" | default "hermes.level2.example.com" | quote }}
+  dashboard:
+    enabled: {{ eq (env "HERMES_DASHBOARD_ENABLED" | default "true") "true" }}
+    publicUrl: {{ env "HERMES_DASHBOARD_PUBLIC_URL" | default (printf "https://%s" (env "HERMES_DOMAIN" | default "hermes.level2.example.com")) | quote }}
+    oidc:
+      issuer: {{ env "HERMES_DASHBOARD_OIDC_ISSUER" | default "" | quote }}
+      clientId: {{ env "HERMES_DASHBOARD_OIDC_CLIENT_ID" | default "" | quote }}
+      scopes: {{ env "HERMES_DASHBOARD_OIDC_SCOPES" | default "openid profile email" | quote }}
+  apiServer:
+    enabled: {{ eq (env "HERMES_API_SERVER_ENABLED" | default "true") "true" }}
+
+

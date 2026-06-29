@@ -7,6 +7,7 @@ This directory contains the Helm and Helmfile configurations to deploy applicati
 ```
 helm/
 ├── charts/           # Custom local Helm charts
+│   ├── hermes-agent/ # Custom local Hermes Agent chart
 │   └── platform/     # Custom platform helpers (ingress, secret management)
 ├── environments/     # Environment-level configuration
 │   └── default.yaml.gotmpl
@@ -29,6 +30,7 @@ Our [helmfile.yaml](file:///Users/yingyu/workspace/infra/helm/helmfile.yaml) orc
 3. **`postgresql`** (`bitnami/postgresql`): High-performance PostgreSQL datastore used by Coder.
 4. **`platform`** ([./charts/platform](file:///Users/yingyu/workspace/infra/helm/charts/platform)): Custom configurations containing our ClusterIssuer, Postgres secrets, OIDC configurations, and wildcards.
 5. **`coder`** (`coder-v2/coder`): Self-hosted environment workspace management.
+6. **`hermes-agent`** ([./charts/hermes-agent](file:///Users/yingyu/workspace/infra/helm/charts/hermes-agent)): Nous Research Hermes Agent assistant deployment.
 
 ---
 

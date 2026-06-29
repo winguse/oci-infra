@@ -1,4 +1,4 @@
-.PHONY: repos helm-apply helm-diff destroy acme-dns-secret
+.PHONY: repos helm-apply helm-diff destroy acme-dns-secret hermes-secrets
 
 # KUBECTX ?= k3s
 #	kubectl config use-context $(KUBECTX)
@@ -22,7 +22,16 @@ acme-dns-secret:
 		--from-file=acmedns.json=/dev/stdin \
 		--dry-run=client -o yaml | kubectl apply -f -
 
-helm-apply: acme-dns-secret repos
+hermes-secrets:
+	kubectl get namespace hermes >/dev/null 2>&1 || kubectl create namespace hermes
+	set -a && . ./.env && set +a && \
+	kubectl create secret generic hermes-agent-secrets \
+		--namespace hermes \
+		--from-literal=HERMES_DASHBOARD_OIDC_CLIENT_SECRET="$$HERMES_DASHBOARD_OIDC_CLIENT_SECRET" \
+		--from-literal=API_SERVER_KEY="$$HERMES_API_SERVER_KEY" \
+		--dry-run=client -o yaml | kubectl apply -f -
+
+helm-apply: acme-dns-secret hermes-secrets repos
 	$(HELMFILE) sync
 
 # Requires helm-diff: helm plugin install https://github.com/databus23/helm-diff
