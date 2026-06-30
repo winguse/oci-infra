@@ -1,0 +1,26 @@
+{{- if .Values.mtls.enabled -}}
+apiVersion: traefik.io/v1alpha1
+kind: TLSOption
+metadata:
+  name: {{ include "hermes-agent.fullname" . }}-mtls
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "hermes-agent.labels" . | nindent 4 }}
+spec:
+  minVersion: VersionTLS12
+  clientAuth:
+    secretNames:
+      - {{ include "hermes-agent.fullname" . }}-mtls-ca
+    clientAuthType: RequireAndVerifyClientCert
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "hermes-agent.fullname" . }}-mtls-ca
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "hermes-agent.labels" . | nindent 4 }}
+type: Opaque
+data:
+  tls.ca: {{ printf "%s\n%s" (.Files.Get "certs/mtlsca.crt") (.Files.Get "certs/mtlsca-095.crt") | b64enc | quote }}
+{{- end }}

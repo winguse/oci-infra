@@ -8,9 +8,15 @@ metadata:
   name: {{ $fullName }}
   labels:
     {{- include "hermes-agent.labels" . | nindent 4 }}
-  {{- with .Values.ingress.annotations }}
+  {{- if or .Values.mtls.enabled .Values.ingress.annotations }}
   annotations:
+    {{- if .Values.mtls.enabled }}
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.tls.options: {{ printf "%s-%s-mtls@kubernetescrd" .Release.Namespace $fullName | quote }}
+    {{- end }}
+    {{- with .Values.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
+    {{- end }}
   {{- end }}
 spec:
   {{- if .Values.ingress.className }}

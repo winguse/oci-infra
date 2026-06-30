@@ -43,6 +43,8 @@ microNfs:
 
 hermes:
   domain: {{ env "HERMES_DOMAIN" | default "hermes.level2.example.com" | quote }}
+  mtls:
+    enabled: {{ eq (env "HERMES_MTLS_ENABLED" | default "true") "true" }}
   dashboard:
     enabled: {{ eq (env "HERMES_DASHBOARD_ENABLED" | default "true") "true" }}
     publicUrl: {{ env "HERMES_DASHBOARD_PUBLIC_URL" | default (printf "https://%s" (env "HERMES_DOMAIN" | default "hermes.level2.example.com")) | quote }}

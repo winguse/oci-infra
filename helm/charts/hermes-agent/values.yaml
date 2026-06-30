@@ -108,6 +108,10 @@ secrets:
   # Dashboard Authentication Settings (Authelia OIDC Secret)
   HERMES_DASHBOARD_OIDC_CLIENT_SECRET: ""
 
+# mTLS protection settings
+mtls:
+  enabled: false
+
 resources: {}
   # We usually recommend at least 1-2 CPUs and 2-4 GiB memory due to Playwright and python runtimes
   # limits:

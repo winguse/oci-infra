@@ -8,6 +8,8 @@
 *.cert
 *.p12
 *.pfx
+!helm/certs/*.crt
+!helm/charts/hermes-agent/certs/*.crt
 
 # Kubeconfig
 k3s/
