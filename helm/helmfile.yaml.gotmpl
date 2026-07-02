@@ -93,3 +93,14 @@ releases:
       - values/hermes-agent.yaml.gotmpl
     needs:
       - coder/platform
+
+  - name: openclaw
+    namespace: openclaw
+    createNamespace: true
+    chart: ./charts/openclaw
+    values:
+      - values/openclaw.yaml.gotmpl
+    needs:
+      - cert-manager/cert-manager
+      - kube-system/micro-nfs
+

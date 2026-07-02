@@ -1,0 +1,20 @@
+ingress:
+  enabled: true
+  className: {{ dig "ingress" "className" "traefik" .Values | quote }}
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: {{ .Values.openclaw.domain | quote }}
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: "openclaw-tls"
+      hosts:
+        - {{ .Values.openclaw.domain | quote }}
+
+mtls:
+  enabled: {{ .Values.openclaw.mtls.enabled }}
+
+existingSecret: "openclaw-secrets"
+

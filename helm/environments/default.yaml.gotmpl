@@ -56,3 +56,7 @@ hermes:
     enabled: {{ eq (env "HERMES_API_SERVER_ENABLED" | default "true") "true" }}
 
 
+openclaw:
+  domain: {{ env "OPENCLAW_DOMAIN" | default "oc.o.wingu.se" | quote }}
+  mtls:
+    enabled: {{ eq (env "OPENCLAW_MTLS_ENABLED" | default "true") "true" }}

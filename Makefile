@@ -31,7 +31,15 @@ hermes-secrets:
 		--from-literal=API_SERVER_KEY="$$HERMES_API_SERVER_KEY" \
 		--dry-run=client -o yaml | kubectl apply -f -
 
-helm-apply: acme-dns-secret hermes-secrets repos
+openclaw-secrets:
+	kubectl get namespace openclaw >/dev/null 2>&1 || kubectl create namespace openclaw
+	set -a && . ./.env && set +a && \
+	kubectl create secret generic openclaw-secrets \
+		--namespace openclaw \
+		--from-literal=OPENCLAW_GATEWAY_TOKEN="$$OPENCLAW_GATEWAY_TOKEN" \
+		--dry-run=client -o yaml | kubectl apply -f -
+
+helm-apply: acme-dns-secret hermes-secrets openclaw-secrets repos
 	$(HELMFILE) sync
 
 # Requires helm-diff: helm plugin install https://github.com/databus23/helm-diff
@@ -40,3 +48,6 @@ helm-diff: repos
 
 destroy:
 	$(HELMFILE) destroy
+
+inspect-node-scale-log:
+	kubectl logs -n kube-system -l "app.kubernetes.io/name=oci-cluster-autoscaler,app.kubernetes.io/instance=cluster-autoscaler" --tail=100 -f

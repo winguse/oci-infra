@@ -1,0 +1,90 @@
+# Default values for openclaw.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: docker.io/openclaw/openclaw
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+command: []
+args: []
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+service:
+  type: ClusterIP
+  # Port configuration inside the cluster
+  gatewayPort: 18789
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: traefik
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+  # Host configurations for Ingress.
+  hosts:
+    - host: openclaw.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  #  - secretName: openclaw-tls
+  #    hosts:
+  #      - openclaw.example.com
+
+# Persistence configuration for the /data directory
+persistence:
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 10Gi
+  mountPath: /home/node
+  existingClaim: ""
+  annotations: {}
+
+# Environment variables to pass directly to the container (non-secret settings)
+env: {}
+
+# Credentials and API keys. These will be stored in a Kubernetes Secret
+# and injected as environment variables.
+existingSecret: ""
+secrets: {}
+
+# mTLS protection settings
+mtls:
+  enabled: false
+
+resources: {}
+  # limits:
+  #   cpu: 1000m
+  #   memory: 2Gi
+  # requests:
+  #   cpu: 200m
+  #   memory: 512Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
