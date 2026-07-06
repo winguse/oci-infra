@@ -37,8 +37,8 @@ const okeCompartment = new oci.identity.Compartment("oke-compartment", {
 
 // Instance configurations
 const shape = config.get("shape") ?? "VM.Standard.A1.Flex";
-const ocpus = config.getNumber("ocpus") ?? 1;
-const memoryInGbs = config.getNumber("memoryInGbs") ?? 6;
+const ocpus = config.getNumber("ocpus") ?? 2;
+const memoryInGbs = config.getNumber("memoryInGbs") ?? 12;
 const nodePoolSize = config.getNumber("nodePoolSize") ?? 1;
 
 // Fetch the GitHub SSH keys (taking only the first one as OKE NodePool accepts a single valid OpenSSH key)

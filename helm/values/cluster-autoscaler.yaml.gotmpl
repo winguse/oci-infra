@@ -8,7 +8,7 @@ autoDiscovery:
 extraArgs:
   cloud-provider: oci
   # Configure min:max:nodepool-ocid
-  nodes: "1:4:{{ env "OKE_NODEPOOL_OCID" }}"
+  nodes: "1:1:{{ env "OKE_NODEPOOL_OCID" }}"
   v: "4"
   # Scale-down utilization threshold calculation:
   # The default is 0.5 (50%). On this dev cluster, nodes are small 1-CPU VMs:

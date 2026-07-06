@@ -5,8 +5,8 @@ config:
   oke:githubUsername: "winguse"
   # Instance shape for the worker nodes (A1 Flex)
   oke:shape: "VM.Standard.A1.Flex"
-  oke:ocpus: "1"
-  oke:memoryInGbs: "6"
+  oke:ocpus: "2"
+  oke:memoryInGbs: "12"
   # Initial/minimum size of the node pool
   oke:nodePoolSize: "1"
   # OCI provider configuration (e.g. region)
