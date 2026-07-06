@@ -81,6 +81,24 @@ const resolvedConfig = nodePoolOption.then(opt => {
     throw new Error("No ARM (aarch64) OKE worker node images found in region options");
   }
 
+  // Sort sources by extracted version descending so we always pick the newest available
+  armOkeSources.sort((a, b) => {
+    const matchA = a.sourceName.match(/OKE-([0-9]+\.[0-9]+\.[0-9]+)/i);
+    const matchB = b.sourceName.match(/OKE-([0-9]+\.[0-9]+\.[0-9]+)/i);
+    const verA = matchA ? matchA[1] : "0.0.0";
+    const verB = matchB ? matchB[1] : "0.0.0";
+    
+    // 1. Compare Kubernetes versions first
+    const k8sCompare = verB.localeCompare(verA, undefined, { numeric: true, sensitivity: 'base' });
+    if (k8sCompare !== 0) {
+      return k8sCompare;
+    }
+    
+    // 2. If K8s versions are equal, fallback to sorting by the full source name descending.
+    // This ensures newer host images (which embed dates like 2024.11.20) are prioritized.
+    return b.sourceName.localeCompare(a.sourceName, undefined, { numeric: true, sensitivity: 'base' });
+  });
+
   // Find a source whose Kubernetes version matches a supported cluster version
   for (const source of armOkeSources) {
     const match = source.sourceName.match(/OKE-([0-9]+\.[0-9]+\.[0-9]+)/i);
