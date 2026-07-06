@@ -1,0 +1,12 @@
+# Helm values for Metrics Server
+image:
+  repository: registry.k8s.io/metrics-server/metrics-server
+
+args:
+  - --kubelet-insecure-tls
+  - --kubelet-preferred-address-types=InternalIP
+
+resources:
+  requests:
+    cpu: null
+    memory: 200Mi

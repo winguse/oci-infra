@@ -9,6 +9,7 @@ repos:
 	helm repo add bitnami https://charts.bitnami.com/bitnami 2>/dev/null || true
 	helm repo add coder-v2 https://helm.coder.com/v2 2>/dev/null || true
 	helm repo add traefik https://traefik.github.io/charts 2>/dev/null || true
+	helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/ 2>/dev/null || true
 	helm repo update
 
 # Create/update the cert-manager namespace secret required by the ClusterIssuer.

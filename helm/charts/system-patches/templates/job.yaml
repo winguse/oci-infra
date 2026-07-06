@@ -1,0 +1,28 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: system-patches
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    spec:
+      serviceAccountName: system-patches
+      restartPolicy: Never
+      containers:
+        - name: patch-resources
+          image: "docker.io/bitnami/kubectl:1.30"
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Patching kube-flannel-ds..."
+              kubectl patch daemonset kube-flannel-ds -n kube-system --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/resources/requests/cpu", "value": "20m"}]'
+              
+              echo "Patching coredns..."
+              kubectl patch deployment coredns -n kube-system --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/resources/requests/cpu", "value": "20m"}]'
+              
+              echo "Patching proxymux-client..."
+              kubectl patch daemonset proxymux-client -n kube-system --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/resources/requests/cpu", "value": "20m"}]'

@@ -17,29 +17,29 @@ extraArgs:
   #
   # Node overhead per node (DaemonSets):
   # - csi-oci-node: 30m
-  # - kube-flannel-ds: 100m
+  # - kube-flannel-ds: 20m
   # - oke-dataplane-observability-agent: 20m
   # - oke-node-problem-detector: 10m
-  # - proxymux-client: 50m
-  # Total DaemonSet overhead = 210m (25.0% of allocatable CPU)
+  # - proxymux-client: 20m
+  # Total DaemonSet overhead = 100m (11.9% of allocatable CPU)
   #
   # Additional cluster-level system services:
-  # - coredns (2 replicas * 100m) = 200m
+  # - coredns (2 replicas * 20m) = 40m
   # - kube-dns-autoscaler = 20m
-  # - postgresql-0 = 100m
+  # - postgresql-0 = 50m
   # - coder-deployment = 50m
   #
-  # Scenario A: A node runs a user workspace pod (250m) and DaemonSets (210m):
-  # - Total requests = 460m
-  # - Utilization = 460m / 840m = 54.76%
-  # With a 50% threshold, this node would never be considered for scale-down.
+  # Scenario A: A node runs a user workspace pod (250m) and DaemonSets (100m):
+  # - Total requests = 350m
+  # - Utilization = 350m / 840m = 41.67%
+  # With a 50% threshold, this node is eligible for scale-down.
   #
-  # Scenario B: A node runs the system services (coredns, etc.) and DaemonSets, totaling ~580m:
-  # - Total requests = 580m
-  # - Utilization = 580m / 840m = 69.05%
+  # Scenario B: A node runs the system services (coredns, etc.) and DaemonSets, totaling ~260m:
+  # - Total requests = 260m
+  # - Utilization = 260m / 840m = 30.95%
   #
   # Setting the threshold to 0.7 (70%) ensures both nodes are eligible for scale-down
-  # and consolidation can occur onto a single node (total requests: 830m < 840m allocatable).
+  # and consolidation can occur onto a single node (total requests: 610m < 840m allocatable).
   scale-down-utilization-threshold: "0.7"
 
 # Authentication using OCI Instance Principals
