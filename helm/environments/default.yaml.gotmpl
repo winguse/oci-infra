@@ -26,6 +26,8 @@ coder:
     emailDomain: {{ env "CODER_OIDC_EMAIL_DOMAIN" | default "" | quote }}
     ignoreEmailVerified: {{ eq (env "CODER_OIDC_IGNORE_EMAIL_VERIFIED" | default "false") "true" }}
     disablePasswordAuth: {{ eq (env "CODER_DISABLE_PASSWORD_AUTH" | default "false") "true" }}
+  telemetry:
+    enable: {{ eq (env "CODER_TELEMETRY_ENABLE" | default "false") "true" }}
 
 cloudflare:
   tunnelToken: {{ env "CLOUDFLARE_TUNNEL_TOKEN" | default "" | quote }}
