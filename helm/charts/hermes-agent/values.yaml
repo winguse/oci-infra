@@ -141,8 +141,8 @@ codeServer:
     - --user-data-dir
     - /opt/data/
   securityContext:
-    runAsUser: 0
-    runAsGroup: 0
+    runAsUser: 10000
+    runAsGroup: 10000
   resources: {}
 
 networkPolicy:
