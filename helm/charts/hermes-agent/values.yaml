@@ -139,7 +139,7 @@ codeServer:
     - none
     - --disable-telemetry
     - --user-data-dir
-    - /opt/data/
+    - /opt/data/coder-user-data
   securityContext:
     runAsUser: 10000
     runAsGroup: 10000
@@ -151,4 +151,3 @@ networkPolicy:
     app.kubernetes.io/name: traefik
   ingressNamespaceLabels:
     kubernetes.io/metadata.name: kube-system
-

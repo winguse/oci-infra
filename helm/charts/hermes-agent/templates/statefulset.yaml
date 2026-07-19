@@ -26,6 +26,29 @@ spec:
       serviceAccountName: {{ include "hermes-agent.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- if .Values.codeServer.enabled }}
+      initContainers:
+        - name: init-etc
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - sh
+            - -c
+            - |
+              cp /etc/passwd /tmp/etc/passwd
+              echo "hermes:x:10000:10000::/opt/data:/bin/bash" >> /tmp/etc/passwd
+              cp /etc/group /tmp/etc/group
+              echo "hermes:x:10000:" >> /tmp/etc/group
+              cp /etc/shadow /tmp/etc/shadow
+              echo "hermes::19000:0:99999:7:::" >> /tmp/etc/shadow
+              chmod 0640 /tmp/etc/shadow
+              mkdir -p /tmp/etc/sudoers.d
+              echo "hermes ALL=(ALL) NOPASSWD:ALL" > /tmp/etc/sudoers.d/hermes
+              chmod 0440 /tmp/etc/sudoers.d/hermes
+          volumeMounts:
+            - name: etc-volume
+              mountPath: /tmp/etc
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -89,10 +112,24 @@ spec:
               protocol: TCP
           env:
             - name: HOME
-              value: /opt/data
+              value: /opt/data/home
+            - name: SHELL
+              value: /usr/bin/zsh
           volumeMounts:
             - name: data
               mountPath: /opt/data
+            - name: etc-volume
+              mountPath: /etc/passwd
+              subPath: passwd
+            - name: etc-volume
+              mountPath: /etc/group
+              subPath: group
+            - name: etc-volume
+              mountPath: /etc/shadow
+              subPath: shadow
+            - name: etc-volume
+              mountPath: /etc/sudoers.d/hermes
+              subPath: sudoers.d/hermes
           {{- if .Values.codeServer.resources }}
           resources:
             {{- toYaml .Values.codeServer.resources | nindent 12 }}
@@ -106,6 +143,10 @@ spec:
           {{- else }}
           emptyDir: {}
           {{- end }}
+        {{- if .Values.codeServer.enabled }}
+        - name: etc-volume
+          emptyDir: {}
+        {{- end }}
 
       {{- with .Values.nodeSelector }}
       nodeSelector:
