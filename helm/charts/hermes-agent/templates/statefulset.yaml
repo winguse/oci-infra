@@ -71,6 +71,33 @@ spec:
 
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+        {{- if .Values.codeServer.enabled }}
+        - name: code-server
+          {{- if .Values.codeServer.securityContext }}
+          securityContext:
+            {{- toYaml .Values.codeServer.securityContext | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.codeServer.image.repository }}:{{ .Values.codeServer.image.tag | default "latest" }}"
+          imagePullPolicy: {{ .Values.codeServer.image.pullPolicy | default "IfNotPresent" }}
+          {{- if .Values.codeServer.args }}
+          args:
+            {{- toYaml .Values.codeServer.args | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: code-server
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: HOME
+              value: /opt/data
+          volumeMounts:
+            - name: data
+              mountPath: /opt/data
+          {{- if .Values.codeServer.resources }}
+          resources:
+            {{- toYaml .Values.codeServer.resources | nindent 12 }}
+          {{- end }}
+        {{- end }}
       volumes:
         - name: data
           {{- if .Values.persistence.enabled }}

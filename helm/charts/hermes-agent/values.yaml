@@ -47,6 +47,7 @@ service:
   # Port configuration inside the cluster
   apiPort: 8642
   dashboardPort: 9119
+  codeServerPort: 8080
 
 ingress:
   enabled: false
@@ -126,3 +127,28 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+codeServer:
+  enabled: false
+  image:
+    repository: ghcr.io/coder/code-server
+    tag: latest
+    pullPolicy: IfNotPresent
+  args:
+    - --auth
+    - none
+    - --disable-telemetry
+    - --user-data-dir
+    - /opt/data/
+  securityContext:
+    runAsUser: 0
+    runAsGroup: 0
+  resources: {}
+
+networkPolicy:
+  enabled: false
+  ingressLabels:
+    app.kubernetes.io/name: traefik
+  ingressNamespaceLabels:
+    kubernetes.io/metadata.name: kube-system
+

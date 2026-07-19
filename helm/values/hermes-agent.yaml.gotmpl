@@ -9,10 +9,16 @@ ingress:
         - path: /
           pathType: Prefix
           portType: dashboard
+    - host: {{ .Values.hermes.codeServerDomain | quote }}
+      paths:
+        - path: /
+          pathType: Prefix
+          portType: code-server
   tls:
     - secretName: {{ .Values.tls.commonSecretName | quote }}
       hosts:
         - {{ .Values.hermes.domain | quote }}
+        - {{ .Values.hermes.codeServerDomain | quote }}
 
 existingSecret: "hermes-agent-secrets"
 
@@ -41,4 +47,11 @@ persistence:
 
 mtls:
   enabled: {{ .Values.hermes.mtls.enabled }}
+
+codeServer:
+  enabled: {{ .Values.hermes.codeServer.enabled }}
+
+networkPolicy:
+  enabled: {{ .Values.hermes.networkPolicy.enabled }}
+
 

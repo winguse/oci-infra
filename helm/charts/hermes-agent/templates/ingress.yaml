@@ -2,6 +2,7 @@
 {{- $fullName := include "hermes-agent.fullname" . -}}
 {{- $svcPortDashboard := .Values.service.dashboardPort -}}
 {{- $svcPortApi := .Values.service.apiPort -}}
+{{- $svcPortCodeServer := .Values.service.codeServerPort | default 8080 -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -44,7 +45,7 @@ spec:
               service:
                 name: {{ $fullName }}
                 port:
-                  number: {{ if eq .portType "api" }}{{ $svcPortApi }}{{ else }}{{ $svcPortDashboard }}{{ end }}
+                  number: {{ if eq .portType "api" }}{{ $svcPortApi }}{{ else if eq .portType "code-server" }}{{ $svcPortCodeServer }}{{ else }}{{ $svcPortDashboard }}{{ end }}
           {{- end }}
     {{- end }}
 {{- end }}

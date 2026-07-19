@@ -15,5 +15,11 @@ spec:
       targetPort: dashboard
       protocol: TCP
       name: dashboard
+    {{- if .Values.codeServer.enabled }}
+    - port: {{ .Values.service.codeServerPort | default 8080 }}
+      targetPort: code-server
+      protocol: TCP
+      name: code-server
+    {{- end }}
   selector:
     {{- include "hermes-agent.selectorLabels" . | nindent 4 }}

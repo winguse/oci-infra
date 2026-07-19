@@ -43,6 +43,7 @@ microNfs:
 
 hermes:
   domain: {{ env "HERMES_DOMAIN" | default "hermes.level2.example.com" | quote }}
+  codeServerDomain: {{ env "HERMES_CODESERVER_DOMAIN" | default "hmc.o.wingu.se" | quote }}
   mtls:
     enabled: {{ eq (env "HERMES_MTLS_ENABLED" | default "true") "true" }}
   dashboard:
@@ -54,6 +55,10 @@ hermes:
       scopes: {{ env "HERMES_DASHBOARD_OIDC_SCOPES" | default "openid profile email" | quote }}
   apiServer:
     enabled: {{ eq (env "HERMES_API_SERVER_ENABLED" | default "true") "true" }}
+  codeServer:
+    enabled: {{ eq (env "HERMES_CODESERVER_ENABLED" | default "true") "true" }}
+  networkPolicy:
+    enabled: {{ eq (env "HERMES_NETWORK_POLICY_ENABLED" | default "true") "true" }}
 
 
 openclaw:

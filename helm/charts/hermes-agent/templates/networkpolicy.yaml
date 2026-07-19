@@ -1,0 +1,41 @@
+{{- if .Values.networkPolicy.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "hermes-agent.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "hermes-agent.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "hermes-agent.selectorLabels" . | nindent 8 }}
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow any traffic to API and Dashboard ports
+    - ports:
+        - protocol: TCP
+          port: {{ .Values.service.apiPort }}
+        - protocol: TCP
+          port: {{ .Values.service.dashboardPort }}
+    # Allow code-server port ONLY from Traefik
+    {{- if .Values.codeServer.enabled }}
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              {{- toYaml .Values.networkPolicy.ingressNamespaceLabels | nindent 14 }}
+          podSelector:
+            matchLabels:
+              {{- toYaml .Values.networkPolicy.ingressLabels | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.service.codeServerPort | default 8080 }}
+    # Allow local pod-to-pod/internal communication on code-server port
+    - from:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.service.codeServerPort | default 8080 }}
+    {{- end }}
+{{- end }}
