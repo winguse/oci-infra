@@ -1,11 +1,18 @@
 ports:
   web:
+    forwardedHeaders:
+      trustedIPs: &trusted_ips
+        - "127.0.0.1/32"
+        - "10.0.0.0/8"
     http:
       redirections:
         entryPoint:
           to: websecure
           scheme: https
           permanent: true
+  websecure:
+    forwardedHeaders:
+      trustedIPs: *trusted_ips
 
 # this only for OKE (Oracle Cloud Kubernetes Service)
 service:
@@ -14,3 +21,5 @@ service:
     service.beta.kubernetes.io/oci-load-balancer-shape: "flexible"
     service.beta.kubernetes.io/oci-load-balancer-shape-flex-min: "10"
     service.beta.kubernetes.io/oci-load-balancer-shape-flex-max: "10"
+  spec:
+    externalTrafficPolicy: Local
