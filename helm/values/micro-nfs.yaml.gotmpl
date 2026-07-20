@@ -1,8 +1,18 @@
 backingStorage:
   size: {{ .Values.microNfs.backingStorage.size | quote }}
+  {{- if .Values.microNfs.backingStorage.volumeName }}
+  storageClassName: ""
+  volumeName: {{ .Values.microNfs.backingStorage.volumeName | quote }}
+  volumeHandle: {{ .Values.microNfs.backingStorage.volumeHandle | quote }}
+  nodeAffinity:
+    {{- toYaml .Values.microNfs.backingStorage.nodeAffinity | nindent 4 }}
+  {{- else }}
   storageClassName: {{ .Values.microNfs.backingStorage.storageClassName | quote }}
+  {{- end }}
 
 storageClass:
   name: {{ .Values.microNfs.storageClass.name | quote }}
   isDefault: {{ .Values.microNfs.storageClass.isDefault }}
 
+resources:
+  {{- toYaml .Values.microNfs.resources | nindent 2 }}

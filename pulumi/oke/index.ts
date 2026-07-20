@@ -23,6 +23,20 @@ function getGithubSshKeys(username: string): Promise<string> {
   });
 }
 
+// Helper function to dynamically construct a /64 subnet prefix from VCN's /56 prefix
+function getSubnetIpv6(vcnIpv6Cidr: string | undefined, subnetIndex: number): string | undefined {
+  if (!vcnIpv6Cidr) {
+    return undefined;
+  }
+  const base = vcnIpv6Cidr.split("/")[0];
+  const parts = base.split(":");
+  const prefixGroup = parts[3] || "0000";
+  const prefixGroupBase = prefixGroup.slice(0, 2);
+  const subnetHex = subnetIndex.toString(16).padStart(2, "0");
+  parts[3] = prefixGroupBase + subnetHex;
+  return parts.join(":") + "/64";
+}
+
 // Load configurations
 const config = new pulumi.Config();
 const compartmentId = config.require("compartmentId");
@@ -133,7 +147,7 @@ const vcn = new oci.core.Vcn("oke-vcn", {
   compartmentId: okeCompartment.id,
   cidrBlock: "10.0.0.0/16",
   displayName: "oke-vcn",
-  isIpv6enabled: false,
+  isIpv6enabled: true,
 });
 
 const gateway = new oci.core.InternetGateway("oke-gateway", {
@@ -153,14 +167,20 @@ const routeTable = new oci.core.RouteTable("oke-route-table", {
       destinationType: "CIDR_BLOCK",
       networkEntityId: gateway.id,
     },
+    {
+      destination: "::/0",
+      destinationType: "CIDR_BLOCK",
+      networkEntityId: gateway.id,
+    },
   ],
 });
 
 // Security list enabling API, SSH, HTTP, HTTPS, and full internal access
-const securityList = new oci.core.SecurityList("oke-security-list", {
+// Security list for Kubernetes API Endpoint
+const endpointSecurityList = new oci.core.SecurityList("oke-endpoint-security-list", {
   compartmentId: okeCompartment.id,
   vcnId: vcn.id,
-  displayName: "oke-security-list",
+  displayName: "oke-endpoint-security-list",
   egressSecurityRules: [
     {
       destination: "0.0.0.0/0",
@@ -173,16 +193,50 @@ const securityList = new oci.core.SecurityList("oke-security-list", {
       protocol: "6", // TCP
       source: "0.0.0.0/0",
       sourceType: "CIDR_BLOCK",
-      tcpOptions: { min: 22, max: 22 },
-      description: "Allow SSH",
-    },
-    {
-      protocol: "6", // TCP
-      source: "0.0.0.0/0",
-      sourceType: "CIDR_BLOCK",
       tcpOptions: { min: 6443, max: 6443 },
       description: "Allow Kubernetes API",
     },
+    {
+      protocol: "6", // TCP
+      source: "::/0",
+      sourceType: "CIDR_BLOCK",
+      tcpOptions: { min: 6443, max: 6443 },
+      description: "Allow Kubernetes API IPv6",
+    },
+    {
+      protocol: "58", // ICMPv6
+      source: "::/0",
+      sourceType: "CIDR_BLOCK",
+      description: "Allow ICMPv6 traffic",
+    },
+    {
+      protocol: "all",
+      source: "10.0.0.0/16",
+      sourceType: "CIDR_BLOCK",
+      description: "Allow all internal VCN traffic",
+    },
+    {
+      protocol: "all",
+      source: vcn.ipv6cidrBlocks.apply(blocks => blocks && blocks.length > 0 ? blocks[0] : "::/0"),
+      sourceType: "CIDR_BLOCK",
+      description: "Allow all internal VCN IPv6 traffic",
+    },
+  ],
+});
+
+// Security list for Load Balancer Subnet (handles public incoming HTTP/HTTPS traffic)
+const lbSecurityList = new oci.core.SecurityList("oke-lb-security-list", {
+  compartmentId: okeCompartment.id,
+  vcnId: vcn.id,
+  displayName: "oke-lb-security-list",
+  egressSecurityRules: [
+    {
+      destination: "0.0.0.0/0",
+      protocol: "all",
+      destinationType: "CIDR_BLOCK",
+    },
+  ],
+  ingressSecurityRules: [
     {
       protocol: "6", // TCP
       source: "0.0.0.0/0",
@@ -192,16 +246,132 @@ const securityList = new oci.core.SecurityList("oke-security-list", {
     },
     {
       protocol: "6", // TCP
+      source: "::/0",
+      sourceType: "CIDR_BLOCK",
+      tcpOptions: { min: 80, max: 80 },
+      description: "Allow HTTP IPv6",
+    },
+    {
+      protocol: "6", // TCP
       source: "0.0.0.0/0",
       sourceType: "CIDR_BLOCK",
       tcpOptions: { min: 443, max: 443 },
       description: "Allow HTTPS",
     },
     {
+      protocol: "6", // TCP
+      source: "::/0",
+      sourceType: "CIDR_BLOCK",
+      tcpOptions: { min: 443, max: 443 },
+      description: "Allow HTTPS IPv6",
+    },
+    {
+      protocol: "58", // ICMPv6
+      source: "::/0",
+      sourceType: "CIDR_BLOCK",
+      description: "Allow ICMPv6 traffic",
+    },
+    {
       protocol: "all",
       source: "10.0.0.0/16",
       sourceType: "CIDR_BLOCK",
       description: "Allow all internal VCN traffic",
+    },
+    {
+      protocol: "all",
+      source: vcn.ipv6cidrBlocks.apply(blocks => blocks && blocks.length > 0 ? blocks[0] : "::/0"),
+      sourceType: "CIDR_BLOCK",
+      description: "Allow all internal VCN IPv6 traffic",
+    },
+  ],
+});
+
+// Security list for Host Nodes Subnet (disables public SSH, HTTP, HTTPS exposure)
+const nodeSecurityList = new oci.core.SecurityList("oke-node-security-list", {
+  compartmentId: okeCompartment.id,
+  vcnId: vcn.id,
+  displayName: "oke-node-security-list",
+  egressSecurityRules: [
+    {
+      destination: "0.0.0.0/0",
+      protocol: "all",
+      destinationType: "CIDR_BLOCK",
+    },
+  ],
+  ingressSecurityRules: [
+    {
+      protocol: "6", // TCP
+      source: "10.0.0.0/16",
+      sourceType: "CIDR_BLOCK",
+      tcpOptions: { min: 22, max: 22 },
+      description: "Allow SSH internally from VCN",
+    },
+    {
+      protocol: "6", // TCP
+      source: vcn.ipv6cidrBlocks.apply(blocks => blocks && blocks.length > 0 ? blocks[0] : "::/0"),
+      sourceType: "CIDR_BLOCK",
+      tcpOptions: { min: 22, max: 22 },
+      description: "Allow SSH IPv6 internally from VCN",
+    },
+    {
+      protocol: "6", // TCP
+      source: "0.0.0.0/0",
+      sourceType: "CIDR_BLOCK",
+      tcpOptions: { min: 31080, max: 31080 },
+      description: "Allow Traefik HTTP NodePort",
+    },
+    {
+      protocol: "6", // TCP
+      source: "::/0",
+      sourceType: "CIDR_BLOCK",
+      tcpOptions: { min: 31080, max: 31080 },
+      description: "Allow Traefik HTTP NodePort IPv6",
+    },
+    {
+      protocol: "6", // TCP
+      source: "0.0.0.0/0",
+      sourceType: "CIDR_BLOCK",
+      tcpOptions: { min: 31332, max: 31332 },
+      description: "Allow Traefik HTTPS NodePort",
+    },
+    {
+      protocol: "6", // TCP
+      source: "::/0",
+      sourceType: "CIDR_BLOCK",
+      tcpOptions: { min: 31332, max: 31332 },
+      description: "Allow Traefik HTTPS NodePort IPv6",
+    },
+    {
+      protocol: "6", // TCP
+      source: "0.0.0.0/0",
+      sourceType: "CIDR_BLOCK",
+      tcpOptions: { min: 30122, max: 30122 },
+      description: "Allow Traefik Health Check NodePort",
+    },
+    {
+      protocol: "6", // TCP
+      source: "::/0",
+      sourceType: "CIDR_BLOCK",
+      tcpOptions: { min: 30122, max: 30122 },
+      description: "Allow Traefik Health Check NodePort IPv6",
+    },
+    {
+      protocol: "58", // ICMPv6
+      source: "::/0",
+      sourceType: "CIDR_BLOCK",
+      description: "Allow ICMPv6 traffic",
+    },
+    {
+      protocol: "all",
+      source: "10.0.0.0/16",
+      sourceType: "CIDR_BLOCK",
+      description: "Allow all internal VCN traffic",
+    },
+    {
+      protocol: "all",
+      source: vcn.ipv6cidrBlocks.apply(blocks => blocks && blocks.length > 0 ? blocks[0] : "::/0"),
+      sourceType: "CIDR_BLOCK",
+      description: "Allow all internal VCN IPv6 traffic",
     },
   ],
 });
@@ -211,27 +381,30 @@ const endpointSubnet = new oci.core.Subnet("oke-endpoint-subnet", {
   compartmentId: okeCompartment.id,
   vcnId: vcn.id,
   cidrBlock: "10.0.1.0/24",
+  ipv6cidrBlock: vcn.ipv6cidrBlocks.apply(blocks => getSubnetIpv6(blocks && blocks.length > 0 ? blocks[0] : undefined, 1)),
   displayName: "oke-endpoint-subnet",
   routeTableId: routeTable.id,
-  securityListIds: [securityList.id],
+  securityListIds: [endpointSecurityList.id],
 });
 
 const nodeSubnet = new oci.core.Subnet("oke-node-subnet", {
   compartmentId: okeCompartment.id,
   vcnId: vcn.id,
   cidrBlock: "10.0.2.0/24",
+  ipv6cidrBlock: vcn.ipv6cidrBlocks.apply(blocks => getSubnetIpv6(blocks && blocks.length > 0 ? blocks[0] : undefined, 2)),
   displayName: "oke-node-subnet",
   routeTableId: routeTable.id,
-  securityListIds: [securityList.id],
+  securityListIds: [nodeSecurityList.id],
 });
 
 const lbSubnet = new oci.core.Subnet("oke-lb-subnet", {
   compartmentId: okeCompartment.id,
   vcnId: vcn.id,
   cidrBlock: "10.0.3.0/24",
+  ipv6cidrBlock: vcn.ipv6cidrBlocks.apply(blocks => getSubnetIpv6(blocks && blocks.length > 0 ? blocks[0] : undefined, 3)),
   displayName: "oke-lb-subnet",
   routeTableId: routeTable.id,
-  securityListIds: [securityList.id],
+  securityListIds: [lbSecurityList.id],
 });
 
 // Create OKE Cluster
@@ -246,11 +419,17 @@ const cluster = new oci.containerengine.Cluster("oke-cluster", {
   },
   options: {
     serviceLbSubnetIds: [lbSubnet.id],
+    ipFamilies: ["IPv4", "IPv6"],
     kubernetesNetworkConfig: {
       podsCidr: "10.244.0.0/16",
       servicesCidr: "10.96.0.0/16",
     },
   },
+}, {
+  ignoreChanges: [
+    "options.kubernetesNetworkConfig.podsCidr",
+    "options.kubernetesNetworkConfig.servicesCidr",
+  ],
 });
 
 // Create OKE Node Pool
@@ -305,6 +484,9 @@ export const clusterId = cluster.id;
 export const nodePoolId = nodePool.id;
 export const dynamicGroupName = autoscalerGroup.name;
 export const policyName = autoscalerPolicy.name;
+export const vcnIpv6CidrBlocks = vcn.ipv6cidrBlocks;
+export const nodeSubnetIpv4Cidr = nodeSubnet.cidrBlock;
+export const nodeSubnetIpv6Cidr = nodeSubnet.ipv6cidrBlock;
 export const kubeconfigContent = cluster.id.apply(cid => 
   oci.containerengine.getClusterKubeConfig({
     clusterId: cid,

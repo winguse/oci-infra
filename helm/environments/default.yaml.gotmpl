@@ -38,10 +38,27 @@ microNfs:
   backingStorage:
     size: {{ env "MICRO_NFS_BACKING_SIZE" | default "100Gi" | quote }}
     storageClassName: {{ env "MICRO_NFS_STORAGE_CLASS" | default "oci-bv" | quote }}
+    {{- if env "MICRO_NFS_VOLUME_NAME" }}
+    volumeName: {{ env "MICRO_NFS_VOLUME_NAME" | quote }}
+    volumeHandle: {{ env "MICRO_NFS_VOLUME_HANDLE" | quote }}
+    nodeAffinity:
+      required:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: topology.kubernetes.io/zone
+                operator: In
+                values:
+                  - {{ env "MICRO_NFS_VOLUME_AD" | default "pMBo:US-SANJOSE-1-AD-1" | splitList ":" | last | quote }}
+    {{- end }}
   storageClass:
     name: {{ env "MICRO_NFS_CLASS_NAME" | default "micro-nfs" | quote }}
     isDefault: {{ eq (env "MICRO_NFS_IS_DEFAULT" | default "true") "true" }}
-
+  resources:
+    limits:
+      memory: {{ env "MICRO_NFS_MEMORY" | default "256Mi" | quote }}
+    requests:
+      cpu: {{ env "MICRO_NFS_CPU" | default "50m" | quote }}
+      memory: {{ env "MICRO_NFS_MEMORY" | default "256Mi" | quote }}
 
 hermes:
   domain: {{ env "HERMES_DOMAIN" | default "hermes.level2.example.com" | quote }}
@@ -65,5 +82,6 @@ hermes:
 
 openclaw:
   domain: {{ env "OPENCLAW_DOMAIN" | default "oc.o.wingu.se" | quote }}
+  replicaCount: {{ env "OPENCLAW_REPLICAS" | default "0" | int }}
   mtls:
     enabled: {{ eq (env "OPENCLAW_MTLS_ENABLED" | default "true") "true" }}

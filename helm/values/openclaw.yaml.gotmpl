@@ -1,20 +1,31 @@
 ingress:
   enabled: true
   className: {{ dig "ingress" "className" "traefik" .Values | quote }}
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
+  annotations: {}
   hosts:
     - host: {{ .Values.openclaw.domain | quote }}
       paths:
         - path: /
           pathType: Prefix
   tls:
-    - secretName: "openclaw-tls"
+    - secretName: {{ .Values.tls.commonSecretName | quote }}
       hosts:
         - {{ .Values.openclaw.domain | quote }}
+
+tls:
+  commonSecretName: {{ .Values.tls.commonSecretName | quote }}
+  commonWildcardDomain: {{ .Values.tls.commonWildcardDomain | quote }}
 
 mtls:
   enabled: {{ .Values.openclaw.mtls.enabled }}
 
 existingSecret: "openclaw-secrets"
+replicaCount: {{ .Values.openclaw.replicaCount }}
+
+resources:
+  limits:
+    memory: 512Mi
+  requests:
+    cpu: 200m
+    memory: 512Mi
 

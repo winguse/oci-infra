@@ -19,10 +19,16 @@ spec:
             - -c
             - |
               echo "Patching kube-flannel-ds..."
-              kubectl patch daemonset kube-flannel-ds -n kube-system --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/resources/requests/cpu", "value": "20m"}]'
+              kubectl patch daemonset kube-flannel-ds -n kube-system --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/resources/requests/cpu", "value": "20m"}, {"op": "replace", "path": "/spec/template/spec/containers/0/resources/limits/memory", "value": "128Mi"}, {"op": "replace", "path": "/spec/template/spec/containers/0/resources/requests/memory", "value": "128Mi"}]'
               
               echo "Patching coredns..."
-              kubectl patch deployment coredns -n kube-system --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/resources/requests/cpu", "value": "20m"}]'
+              kubectl patch deployment coredns -n kube-system --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/resources/requests/cpu", "value": "20m"}, {"op": "replace", "path": "/spec/template/spec/containers/0/resources/limits/memory", "value": "32Mi"}, {"op": "replace", "path": "/spec/template/spec/containers/0/resources/requests/memory", "value": "32Mi"}]'
               
               echo "Patching proxymux-client..."
               kubectl patch daemonset proxymux-client -n kube-system --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/resources/requests/cpu", "value": "20m"}]'
+
+              echo "Patching csi-oci-node..."
+              kubectl patch daemonset csi-oci-node -n kube-system --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/resources/limits/memory", "value": "32Mi"}, {"op": "replace", "path": "/spec/template/spec/containers/0/resources/requests/memory", "value": "32Mi"}]'
+
+              echo "Patching oke-dataplane-observability-agent..."
+              kubectl patch daemonset oke-dataplane-observability-agent -n kube-system --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/resources/limits/memory", "value": "128Mi"}, {"op": "replace", "path": "/spec/template/spec/containers/0/resources/requests/memory", "value": "64Mi"}]'

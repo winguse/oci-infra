@@ -3,8 +3,11 @@ coder:
     type: ClusterIP
 
   resources:
+    limits:
+      memory: 512Mi
     requests:
       cpu: 50m
+      memory: 256Mi
 
   env:
     - name: CODER_DISABLE_NETWORK_TELEMETRY

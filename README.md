@@ -70,6 +70,7 @@ cd pulumi/oke
 npm install
 pulumi stack init dev
 pulumi up
+pulumi stack output kubeconfigContent --show-secrets > ~/.kube/config
 ```
 For more information, see the [Pulumi README](file:///Users/yingyu/workspace/infra/pulumi/README.md).
 

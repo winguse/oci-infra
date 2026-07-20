@@ -50,6 +50,7 @@ rbac:
 
 service:
   type: ClusterIP
+  clusterIP: ""
   # Internal ports configuration
   ports:
     nfs: 2049

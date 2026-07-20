@@ -1,5 +1,6 @@
 ports:
   web:
+    nodePort: 31080
     forwardedHeaders:
       trustedIPs: &trusted_ips
         - "127.0.0.1/32"
@@ -11,15 +12,26 @@ ports:
           scheme: https
           permanent: true
   websecure:
+    nodePort: 31332
     forwardedHeaders:
       trustedIPs: *trusted_ips
 
 # this only for OKE (Oracle Cloud Kubernetes Service)
 service:
   annotations:
-    service.beta.kubernetes.io/oci-load-balancer-type: "nlb"
-    service.beta.kubernetes.io/oci-load-balancer-shape: "flexible"
-    service.beta.kubernetes.io/oci-load-balancer-shape-flex-min: "10"
-    service.beta.kubernetes.io/oci-load-balancer-shape-flex-max: "10"
+    oci.oraclecloud.com/load-balancer-type: "nlb"
+    oci-network-load-balancer.oraclecloud.com/is-preserve-source: "true"
   spec:
     externalTrafficPolicy: Local
+    healthCheckNodePort: 30122
+    ipFamilyPolicy: PreferDualStack
+    ipFamilies:
+      - IPv4
+      - IPv6
+
+resources:
+  limits:
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 64Mi

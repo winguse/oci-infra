@@ -1,0 +1,21 @@
+{{- if and .Values.backingStorage.volumeName .Values.backingStorage.volumeHandle -}}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Values.backingStorage.volumeName }}
+spec:
+  capacity:
+    storage: {{ .Values.backingStorage.size | quote }}
+  accessModes:
+    {{- toYaml .Values.backingStorage.accessModes | nindent 4 }}
+  persistentVolumeReclaimPolicy: Retain
+  volumeMode: Filesystem
+  storageClassName: ""
+  csi:
+    driver: blockvolume.csi.oraclecloud.com
+    volumeHandle: {{ .Values.backingStorage.volumeHandle | quote }}
+  {{- if .Values.backingStorage.nodeAffinity }}
+  nodeAffinity:
+    {{- toYaml .Values.backingStorage.nodeAffinity | nindent 4 }}
+  {{- end }}
+{{- end }}

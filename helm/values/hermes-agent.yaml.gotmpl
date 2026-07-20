@@ -1,8 +1,7 @@
 ingress:
   enabled: true
   className: {{ dig "ingress" "className" "traefik" .Values | quote }}
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
+  annotations: {}
   hosts:
     - host: {{ .Values.hermes.domain | quote }}
       paths:
@@ -19,6 +18,10 @@ ingress:
       hosts:
         - {{ .Values.hermes.domain | quote }}
         - {{ .Values.hermes.codeServerDomain | quote }}
+
+tls:
+  commonSecretName: {{ .Values.tls.commonSecretName | quote }}
+  commonWildcardDomain: {{ .Values.tls.commonWildcardDomain | quote }}
 
 existingSecret: "hermes-agent-secrets"
 
@@ -48,8 +51,21 @@ persistence:
 mtls:
   enabled: {{ .Values.hermes.mtls.enabled }}
 
+resources:
+  limits:
+    memory: 2Gi
+  requests:
+    cpu: 100m
+    memory: 512Mi
+
 codeServer:
   enabled: {{ .Values.hermes.codeServer.enabled }}
+  resources:
+    limits:
+      memory: 2Gi
+    requests:
+      cpu: 100m
+      memory: 128Mi
 
 networkPolicy:
   enabled: {{ .Values.hermes.networkPolicy.enabled }}

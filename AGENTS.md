@@ -12,6 +12,7 @@ do not read credentials file `.env`, when coding only use `.env.example`
 - **Solution**: Use `micro-nfs` provisioner to share folders as smaller PVCs dynamically over a single large OCI Block Volume.
 - **Container Capabilities**: NFS provisioners require `DAC_READ_SEARCH` and `SYS_RESOURCE` capabilities.
 - **Service Bindings**: Require `SERVICE_NAME` and `POD_IP` for endpoint validation.
+- **Resource Limits**: To prevent unchecked memory usage, the `micro-nfs` pod is constrained with a CPU request of `50m` (no CPU limit) and matching memory request/limits (defaulting to `256Mi`), configurable via `MICRO_NFS_CPU` and `MICRO_NFS_MEMORY`.
 
 ## 3. OpenClaw mTLS Gateway
 - **Ingress Domain**: Exposed at `oc.o.wingu.se`.
