@@ -8,10 +8,12 @@ acmeEmail: {{ env "ACME_EMAIL" | default "admin@example.com" | quote }}
 acmeServer: https://acme-v02.api.letsencrypt.org/directory
 
 postgresql:
+  namespace: {{ env "POSTGRES_NAMESPACE" | default "postgres" | quote }}
   auth:
     username: {{ env "POSTGRES_USER" | default "coder" | quote }}
     password: {{ env "POSTGRES_PASSWORD" | default "coder" | quote }}
     database: {{ env "POSTGRES_DATABASE" | default "coder" | quote }}
+  extraDatabases: []
 
 acmeDNS:
   host: {{ env "ACME_DNS_HOST" | default "https://auth.example.com" | quote }}

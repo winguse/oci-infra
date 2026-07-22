@@ -15,6 +15,7 @@ acmeDNS:
   secretKey: {{ .Values.acmeDNS.secretKey | quote }}
 
 postgresql:
+  namespace: {{ .Values.postgresql.namespace | quote }}
   auth:
     username: {{ .Values.postgresql.auth.username | quote }}
     database: {{ .Values.postgresql.auth.database | quote }}

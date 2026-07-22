@@ -31,3 +31,7 @@ do not read credentials file `.env`, when coding only use `.env.example`
 - **Ingress & mTLS**: The code-server sidecar runs on port 8080 and is exposed via the domain `hmc.o.wingu.se`, protected by the same mTLS gateway/policy as the primary Hermes Agent dashboard (`hm.o.wingu.se`).
 - **Network Isolation**: The code-server sidecar's port 8080 is restricted using a Kubernetes `NetworkPolicy` resource (enabled by default). This policy limits ingress on port 8080 specifically to Traefik ingress proxy pods in the `kube-system` namespace and internal loopback/pod-to-pod communication.
 
+## 6. Shared PostgreSQL Deployment
+- **Dedicated Namespace**: The PostgreSQL server is deployed in a dedicated namespace (configurable via `POSTGRES_NAMESPACE`, defaulting to `postgres`) to separate it from the `coder` workspace/namespace.
+- **Cross-Namespace Sharing**: Other cluster services connect to the shared PostgreSQL instance using the fully qualified domain name (FQDN): `postgresql.<postgres-namespace>.svc.cluster.local:5432`.
+- **Database/User Initialization**: Multiple databases and users are dynamically initialized on first start using the Bitnami PostgreSQL chart's `primary.initdb.scripts` block, controlled via the `postgresql.extraDatabases` list configuration in `default.yaml.gotmpl`.

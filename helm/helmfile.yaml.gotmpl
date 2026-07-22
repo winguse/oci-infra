@@ -57,7 +57,7 @@ releases:
       - values/cert-manager.yaml
 
   - name: postgresql
-    namespace: coder
+    namespace: {{ .Values.postgresql.namespace | quote }}
     createNamespace: true
     chart: bitnami/postgresql
     version: 18.8.0
@@ -76,7 +76,7 @@ releases:
       - values/platform.yaml.gotmpl
     needs:
       - cert-manager/cert-manager
-      - postgresql
+      - {{ .Values.postgresql.namespace }}/postgresql
 
   - name: coder
     namespace: coder
@@ -86,7 +86,7 @@ releases:
       - values/coder.yaml.gotmpl
     needs:
       - platform
-      - postgresql
+      - {{ .Values.postgresql.namespace }}/postgresql
 
   - name: micro-nfs
     namespace: kube-system

@@ -5,3 +5,32 @@ cloudflare:
   tunnelToken: ""
   coderDomain: ""
   coderWildcardDomain: ""
+
+postgresql:
+  namespace: "postgres"
+  auth:
+    username: "coder"
+    database: "coder"
+
+coderDomain: ""
+
+tls:
+  commonWildcardDomain: ""
+  commonSecretName: ""
+  coderWildcardDomain: ""
+  coderSecretName: ""
+
+acmeEmail: ""
+acmeServer: ""
+
+acmeDNS:
+  host: ""
+  secretName: ""
+  secretKey: ""
+
+coder:
+  oidc:
+    issuerUrl: ""
+    clientId: ""
+    clientSecret: ""
+    emailDomain: ""

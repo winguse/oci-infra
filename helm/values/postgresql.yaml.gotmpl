@@ -16,5 +16,15 @@ primary:
       cpu: 50m
       ephemeral-storage: 50Mi
       memory: 512Mi
+  {{- if .Values.postgresql.extraDatabases }}
+  initdb:
+    scripts:
+      01-init-extra-databases.sql: |
+        {{- range $db := .Values.postgresql.extraDatabases }}
+        CREATE USER {{ $db.username }} WITH PASSWORD {{ $db.password | quote }};
+        CREATE DATABASE {{ $db.name }} OWNER {{ $db.username }};
+        GRANT ALL PRIVILEGES ON DATABASE {{ $db.name }} TO {{ $db.username }};
+        {{- end }}
+  {{- end }}
 
 architecture: standalone
