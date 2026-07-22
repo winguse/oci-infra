@@ -23,7 +23,6 @@ spec:
             - "--config=/app/config.yaml"
             - "--port=4000"
             - "--host=0.0.0.0"
-            - "--detailed_debug"
           ports:
             - name: http
               containerPort: 4000
@@ -43,6 +42,12 @@ spec:
             - name: PROXY_BASE_URL
               value: {{ .Values.proxyBaseUrl | quote }}
             {{- end }}
+            - name: LITELLM_LOG
+              value: {{ .Values.logLevel | quote }}
+            - name: NO_DOCS
+              value: {{ .Values.noDocs | quote }}
+            - name: NO_REDOC
+              value: {{ .Values.noRedoc | quote }}
             {{- if .Values.oidc.enabled }}
             - name: GENERIC_CLIENT_ID
               value: {{ .Values.oidc.clientId | quote }}

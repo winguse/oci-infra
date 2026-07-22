@@ -25,3 +25,15 @@ oidc:
   tokenEndpoint: {{ .Values.litellm.oidc.tokenEndpoint | quote }}
   userEndpoint: {{ .Values.litellm.oidc.userEndpoint | quote }}
   callbackUrl: {{ printf "https://%s/sso/callback" .Values.litellm.domain | quote }}
+
+logLevel: {{ env "LITELLM_LOG" | default "info" | quote }}
+
+noDocs: {{ env "LITELLM_NO_DOCS" | default "true" }}
+noRedoc: {{ env "LITELLM_NO_REDOC" | default "true" }}
+
+config: |
+  model_list: []
+  {{- if .Values.litellm.oidc.enabled }}
+  general_settings:
+    auto_redirect_ui_login_to_sso: true
+  {{- end }}
