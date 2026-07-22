@@ -39,6 +39,10 @@ spec:
                 secretKeyRef:
                   name: {{ include "litellm.fullname" . }}
                   key: LITELLM_MASTER_KEY
+            {{- if .Values.proxyBaseUrl }}
+            - name: PROXY_BASE_URL
+              value: {{ .Values.proxyBaseUrl | quote }}
+            {{- end }}
             {{- if .Values.oidc.enabled }}
             - name: GENERIC_CLIENT_ID
               value: {{ .Values.oidc.clientId | quote }}

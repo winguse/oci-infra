@@ -29,6 +29,8 @@ oidc:
   userEndpoint: ""
   callbackUrl: ""
 
+proxyBaseUrl: ""
+
 config: |
   model_list: []
 
