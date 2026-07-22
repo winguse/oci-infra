@@ -122,6 +122,15 @@ releases:
     needs:
       - {{ .Values.postgresql.namespace }}/postgresql
 
+  - name: bifrost
+    namespace: bifrost
+    createNamespace: true
+    chart: ./charts/bifrost
+    values:
+      - values/bifrost.yaml.gotmpl
+    needs:
+      - kube-system/micro-nfs
+
   - name: system-patches
     namespace: kube-system
     chart: ./charts/system-patches

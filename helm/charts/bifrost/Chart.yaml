@@ -1,0 +1,6 @@
+apiVersion: v2
+name: bifrost
+description: A Helm chart for deploying Maxim AI Gateway (Bifrost)
+type: application
+version: 0.1.0
+appVersion: "latest"

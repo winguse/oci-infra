@@ -105,3 +105,6 @@ litellm:
     authEndpoint: {{ env "LITELLM_OIDC_AUTH_ENDPOINT" | default "" | quote }}
     tokenEndpoint: {{ env "LITELLM_OIDC_TOKEN_ENDPOINT" | default "" | quote }}
     userEndpoint: {{ env "LITELLM_OIDC_USER_ENDPOINT" | default "" | quote }}
+
+bifrost:
+  domain: {{ env "BIFROST_DOMAIN" | default "bf.o.wingu.se" | quote }}
