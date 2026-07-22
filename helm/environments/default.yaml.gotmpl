@@ -94,6 +94,7 @@ openclaw:
 litellm:
   domain: {{ env "LITELLM_DOMAIN" | default "llm.o.wingu.se" | quote }}
   masterKey: {{ env "LITELLM_MASTER_KEY" | default "sk-litellm-master-key-12345" | quote }}
+  replicaCount: {{ env "LITELLM_REPLICAS" | default "0" | int }}
   database:
     username: {{ env "LITELLM_DB_USER" | default "litellm" | quote }}
     password: {{ env "LITELLM_DB_PASSWORD" | default "litellm-pass" | quote }}
@@ -108,3 +109,6 @@ litellm:
 
 bifrost:
   domain: {{ env "BIFROST_DOMAIN" | default "bf.o.wingu.se" | quote }}
+  publicDomain: {{ env "BIFROST_PUBLIC_DOMAIN" | default "gwl.o.wingu.se" | quote }}
+  mtls:
+    enabled: {{ eq (env "BIFROST_MTLS_ENABLED" | default "true") "true" }}

@@ -9,3 +9,18 @@ ingress:
     - secretName: {{ .Values.tls.commonSecretName | quote }}
       hosts:
         - {{ .Values.bifrost.domain | quote }}
+
+publicIngress:
+  enabled: true
+  hosts:
+    - host: {{ .Values.bifrost.publicDomain | quote }}
+      paths:
+        - path: /v1/
+          pathType: Prefix
+  tls:
+    - secretName: {{ .Values.tls.commonSecretName | quote }}
+      hosts:
+        - {{ .Values.bifrost.publicDomain | quote }}
+
+mtls:
+  enabled: {{ .Values.bifrost.mtls.enabled }}

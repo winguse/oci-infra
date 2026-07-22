@@ -15,6 +15,15 @@ ingress:
   hosts: []
   tls: []
 
+publicIngress:
+  enabled: false
+  className: traefik
+  hosts: []
+  tls: []
+
+mtls:
+  enabled: false
+
 persistence:
   enabled: true
   size: 10Gi
