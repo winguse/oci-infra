@@ -113,6 +113,15 @@ releases:
       - cert-manager/cert-manager
       - kube-system/micro-nfs
 
+  - name: litellm
+    namespace: litellm
+    createNamespace: true
+    chart: ./charts/litellm
+    values:
+      - values/litellm.yaml.gotmpl
+    needs:
+      - {{ .Values.postgresql.namespace }}/postgresql
+
   - name: system-patches
     namespace: kube-system
     chart: ./charts/system-patches

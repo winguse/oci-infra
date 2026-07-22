@@ -1,0 +1,25 @@
+masterKey: {{ .Values.litellm.masterKey | quote }}
+
+ingress:
+  enabled: true
+  hosts:
+    - host: {{ .Values.litellm.domain | quote }}
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: {{ .Values.tls.commonSecretName | quote }}
+      hosts:
+        - {{ .Values.litellm.domain | quote }}
+
+database:
+  url: {{ printf "postgresql://%s:%s@postgresql.%s.svc.cluster.local:5432/%s?sslmode=disable" .Values.litellm.database.username .Values.litellm.database.password .Values.postgresql.namespace .Values.litellm.database.name | quote }}
+
+oidc:
+  enabled: {{ .Values.litellm.oidc.enabled }}
+  clientId: {{ .Values.litellm.oidc.clientId | quote }}
+  clientSecret: {{ .Values.litellm.oidc.clientSecret | quote }}
+  authEndpoint: {{ .Values.litellm.oidc.authEndpoint | quote }}
+  tokenEndpoint: {{ .Values.litellm.oidc.tokenEndpoint | quote }}
+  userEndpoint: {{ .Values.litellm.oidc.userEndpoint | quote }}
+  callbackUrl: {{ printf "https://%s/sso/callback" .Values.litellm.domain | quote }}

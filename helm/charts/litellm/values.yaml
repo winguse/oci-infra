@@ -1,0 +1,40 @@
+replicaCount: 1
+
+image:
+  repository: ghcr.io/berriai/litellm-database
+  tag: "v1.93.0"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 4000
+
+ingress:
+  enabled: true
+  className: traefik
+  hosts: []
+  tls: []
+
+masterKey: ""
+
+database:
+  url: ""
+
+oidc:
+  enabled: false
+  clientId: ""
+  clientSecret: ""
+  authEndpoint: ""
+  tokenEndpoint: ""
+  userEndpoint: ""
+  callbackUrl: ""
+
+config: |
+  model_list: []
+
+resources:
+  limits:
+    memory: 2G
+  requests:
+    cpu: 100m
+    memory: 512Mi

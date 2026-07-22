@@ -13,7 +13,10 @@ postgresql:
     username: {{ env "POSTGRES_USER" | default "coder" | quote }}
     password: {{ env "POSTGRES_PASSWORD" | default "coder" | quote }}
     database: {{ env "POSTGRES_DATABASE" | default "coder" | quote }}
-  extraDatabases: []
+  extraDatabases:
+    - name: "litellm"
+      username: {{ env "LITELLM_DB_USER" | default "litellm" | quote }}
+      password: {{ env "LITELLM_DB_PASSWORD" | default "litellm-pass" | quote }}
 
 acmeDNS:
   host: {{ env "ACME_DNS_HOST" | default "https://auth.example.com" | quote }}
@@ -87,3 +90,18 @@ openclaw:
   replicaCount: {{ env "OPENCLAW_REPLICAS" | default "0" | int }}
   mtls:
     enabled: {{ eq (env "OPENCLAW_MTLS_ENABLED" | default "true") "true" }}
+
+litellm:
+  domain: {{ env "LITELLM_DOMAIN" | default "llm.o.wingu.se" | quote }}
+  masterKey: {{ env "LITELLM_MASTER_KEY" | default "sk-litellm-master-key-12345" | quote }}
+  database:
+    username: {{ env "LITELLM_DB_USER" | default "litellm" | quote }}
+    password: {{ env "LITELLM_DB_PASSWORD" | default "litellm-pass" | quote }}
+    name: "litellm"
+  oidc:
+    enabled: {{ eq (env "LITELLM_OIDC_ENABLED" | default "false") "true" }}
+    clientId: {{ env "LITELLM_OIDC_CLIENT_ID" | default "" | quote }}
+    clientSecret: {{ env "LITELLM_OIDC_CLIENT_SECRET" | default "" | quote }}
+    authEndpoint: {{ env "LITELLM_OIDC_AUTH_ENDPOINT" | default "" | quote }}
+    tokenEndpoint: {{ env "LITELLM_OIDC_TOKEN_ENDPOINT" | default "" | quote }}
+    userEndpoint: {{ env "LITELLM_OIDC_USER_ENDPOINT" | default "" | quote }}

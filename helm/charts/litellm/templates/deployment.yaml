@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "litellm.fullname" . }}
+  labels:
+    {{- include "litellm.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "litellm.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "litellm.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: litellm
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["litellm"]
+          args:
+            - "--config=/app/config.yaml"
+            - "--port=4000"
+            - "--host=0.0.0.0"
+            - "--detailed_debug"
+          ports:
+            - name: http
+              containerPort: 4000
+              protocol: TCP
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "litellm.fullname" . }}
+                  key: DATABASE_URL
+            - name: LITELLM_MASTER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "litellm.fullname" . }}
+                  key: LITELLM_MASTER_KEY
+            {{- if .Values.oidc.enabled }}
+            - name: GENERIC_CLIENT_ID
+              value: {{ .Values.oidc.clientId | quote }}
+            - name: GENERIC_CLIENT_SECRET
+              value: {{ .Values.oidc.clientSecret | quote }}
+            - name: GENERIC_AUTHORIZATION_ENDPOINT
+              value: {{ .Values.oidc.authEndpoint | quote }}
+            - name: GENERIC_TOKEN_ENDPOINT
+              value: {{ .Values.oidc.tokenEndpoint | quote }}
+            - name: GENERIC_USER_ENDPOINT
+              value: {{ .Values.oidc.userEndpoint | quote }}
+            - name: GENERIC_CALLBACK_URL
+              value: {{ .Values.oidc.callbackUrl | quote }}
+            {{- end }}
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config.yaml
+              subPath: config.yaml
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ include "litellm.fullname" . }}-config

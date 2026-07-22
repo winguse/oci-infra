@@ -1,4 +1,4 @@
-.PHONY: repos helm-apply helm-diff destroy acme-dns-secret hermes-secrets
+.PHONY: repos helm-apply helm-diff destroy acme-dns-secret hermes-secrets openclaw-secrets init-shared-db
 
 # KUBECTX ?= k3s
 #	kubectl config use-context $(KUBECTX)
@@ -40,7 +40,10 @@ openclaw-secrets:
 		--from-literal=OPENCLAW_GATEWAY_TOKEN="$$OPENCLAW_GATEWAY_TOKEN" \
 		--dry-run=client -o yaml | kubectl apply -f -
 
-helm-apply: acme-dns-secret hermes-secrets openclaw-secrets repos
+init-shared-db:
+	chmod +x scripts/init-shared-db.py && ./scripts/init-shared-db.py
+
+helm-apply: acme-dns-secret hermes-secrets openclaw-secrets init-shared-db repos
 	$(HELMFILE) sync
 
 # Requires helm-diff: helm plugin install https://github.com/databus23/helm-diff
