@@ -48,7 +48,7 @@ spec:
               value: {{ .Values.oidc.authEndpoint | quote }}
             - name: GENERIC_TOKEN_ENDPOINT
               value: {{ .Values.oidc.tokenEndpoint | quote }}
-            - name: GENERIC_USER_ENDPOINT
+            - name: GENERIC_USERINFO_ENDPOINT
               value: {{ .Values.oidc.userEndpoint | quote }}
             - name: GENERIC_CALLBACK_URL
               value: {{ .Values.oidc.callbackUrl | quote }}
