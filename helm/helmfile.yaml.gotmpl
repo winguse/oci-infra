@@ -131,7 +131,15 @@ releases:
     needs:
       - kube-system/micro-nfs
 
+  - name: presidio
+    namespace: {{ .Values.presidio.namespace | quote }}
+    createNamespace: true
+    chart: ./charts/presidio
+    values:
+      - values/presidio.yaml.gotmpl
+
   - name: system-patches
     namespace: kube-system
     chart: ./charts/system-patches
+
 

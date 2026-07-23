@@ -112,3 +112,20 @@ bifrost:
   publicDomain: {{ env "BIFROST_PUBLIC_DOMAIN" | default "gwl.o.wingu.se" | quote }}
   mtls:
     enabled: {{ eq (env "BIFROST_MTLS_ENABLED" | default "true") "true" }}
+
+presidio:
+  namespace: {{ env "PRESIDIO_NAMESPACE" | default "presidio" | quote }}
+  presidioRegistry: {{ env "PRESIDIO_REGISTRY" | default "mcr.microsoft.com" | quote }}
+  analyzer:
+    replicaCount: {{ env "PRESIDIO_ANALYZER_REPLICAS" | default "1" | int }}
+    image:
+      registry: "mcr.microsoft.com"
+      repository: "presidio-analyzer"
+      tag: {{ env "PRESIDIO_ANALYZER_TAG" | default "latest" | quote }}
+  anonymizer:
+    replicaCount: {{ env "PRESIDIO_ANONYMIZER_REPLICAS" | default "1" | int }}
+    image:
+      registry: "mcr.microsoft.com"
+      repository: "presidio-anonymizer"
+      tag: {{ env "PRESIDIO_ANONYMIZER_TAG" | default "latest" | quote }}
+

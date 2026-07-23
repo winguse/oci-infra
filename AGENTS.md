@@ -35,3 +35,9 @@ do not read credentials file `.env`, when coding only use `.env.example`
 - **Dedicated Namespace**: The PostgreSQL server is deployed in a dedicated namespace (configurable via `POSTGRES_NAMESPACE`, defaulting to `postgres`) to separate it from the `coder` workspace/namespace.
 - **Cross-Namespace Sharing**: Other cluster services connect to the shared PostgreSQL instance using the fully qualified domain name (FQDN): `postgresql.<postgres-namespace>.svc.cluster.local:5432`.
 - **Database/User Initialization**: Multiple databases and users are dynamically initialized on first start using the Bitnami PostgreSQL chart's `primary.initdb.scripts` block, controlled via the `postgresql.extraDatabases` list configuration in `default.yaml.gotmpl`.
+
+## 7. Microsoft Presidio Deployment (Analyzer & Anonymizer)
+- **Dedicated Namespace**: Deployed in a dedicated namespace (configurable via `PRESIDIO_NAMESPACE`, defaulting to `presidio`) to keep them isolated from other workloads.
+- **Components**: Separated into `presidio-analyzer` and `presidio-anonymizer` deployments/services, exposing their REST APIs internally on port `3000`.
+- **LiteLLM Integration**: Integrated with the LiteLLM proxy for PII detection/guardrails by passing the `PRESIDIO_ANALYZER_API_BASE` and `PRESIDIO_ANONYMIZER_API_BASE` environment variables to the LiteLLM deployment.
+

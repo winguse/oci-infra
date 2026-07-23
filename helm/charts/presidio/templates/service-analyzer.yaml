@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "presidio.analyzer.fullname" . }}
+  labels:
+    {{- include "presidio.analyzer.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.analyzer.service.type }}
+  ports:
+    - port: {{ .Values.analyzer.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "presidio.analyzer.selectorLabels" . | nindent 4 }}

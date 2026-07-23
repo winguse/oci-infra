@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "presidio.anonymizer.fullname" . }}
+  labels:
+    {{- include "presidio.anonymizer.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.anonymizer.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "presidio.anonymizer.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "presidio.anonymizer.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: anonymizer
+          image: "{{ .Values.anonymizer.image.registry }}/{{ .Values.anonymizer.image.repository }}:{{ .Values.anonymizer.image.tag }}"
+          imagePullPolicy: {{ .Values.anonymizer.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.anonymizer.resources | nindent 12 }}

@@ -1,0 +1,35 @@
+global: {}
+
+analyzer:
+  replicaCount: 1
+  image:
+    registry: mcr.microsoft.com
+    repository: presidio-analyzer
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 3000
+  resources:
+    limits:
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
+anonymizer:
+  replicaCount: 1
+  image:
+    registry: mcr.microsoft.com
+    repository: presidio-anonymizer
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 3000
+  resources:
+    limits:
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi

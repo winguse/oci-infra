@@ -1,0 +1,13 @@
+analyzer:
+  replicaCount: {{ .Values.presidio.analyzer.replicaCount }}
+  image:
+    registry: {{ .Values.presidio.presidioRegistry | default .Values.presidio.analyzer.image.registry | quote }}
+    repository: {{ .Values.presidio.analyzer.image.repository | quote }}
+    tag: {{ .Values.presidio.analyzer.image.tag | quote }}
+
+anonymizer:
+  replicaCount: {{ .Values.presidio.anonymizer.replicaCount }}
+  image:
+    registry: {{ .Values.presidio.presidioRegistry | default .Values.presidio.anonymizer.image.registry | quote }}
+    repository: {{ .Values.presidio.anonymizer.image.repository | quote }}
+    tag: {{ .Values.presidio.anonymizer.image.tag | quote }}

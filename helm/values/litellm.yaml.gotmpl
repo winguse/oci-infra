@@ -39,3 +39,8 @@ config: |
   general_settings:
     auto_redirect_ui_login_to_sso: true
   {{- end }}
+
+env:
+  PRESIDIO_ANALYZER_API_BASE: {{ printf "http://presidio-analyzer.%s.svc.cluster.local:3000" .Values.presidio.namespace | quote }}
+  PRESIDIO_ANONYMIZER_API_BASE: {{ printf "http://presidio-anonymizer.%s.svc.cluster.local:3000" .Values.presidio.namespace | quote }}
+

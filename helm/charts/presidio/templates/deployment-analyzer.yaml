@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "presidio.analyzer.fullname" . }}
+  labels:
+    {{- include "presidio.analyzer.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.analyzer.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "presidio.analyzer.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "presidio.analyzer.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: analyzer
+          image: "{{ .Values.analyzer.image.registry }}/{{ .Values.analyzer.image.repository }}:{{ .Values.analyzer.image.tag }}"
+          imagePullPolicy: {{ .Values.analyzer.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.analyzer.resources | nindent 12 }}

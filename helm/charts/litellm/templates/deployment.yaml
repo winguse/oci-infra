@@ -28,6 +28,8 @@ spec:
               containerPort: 4000
               protocol: TCP
           env:
+            - name: STORE_MODEL_IN_DB
+              value: 'true'
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
@@ -61,6 +63,10 @@ spec:
               value: {{ .Values.oidc.userEndpoint | quote }}
             - name: GENERIC_CALLBACK_URL
               value: {{ .Values.oidc.callbackUrl | quote }}
+            {{- end }}
+            {{- range $key, $val := .Values.env }}
+            - name: {{ $key }}
+              value: {{ $val | quote }}
             {{- end }}
           volumeMounts:
             - name: config-volume
