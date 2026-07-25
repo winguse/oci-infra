@@ -60,10 +60,10 @@ microNfs:
     isDefault: {{ eq (env "MICRO_NFS_IS_DEFAULT" | default "true") "true" }}
   resources:
     limits:
-      memory: {{ env "MICRO_NFS_MEMORY" | default "256Mi" | quote }}
+      memory: {{ env "MICRO_NFS_MEMORY_LIMIT" | default "256Mi" | quote }}
     requests:
       cpu: {{ env "MICRO_NFS_CPU" | default "50m" | quote }}
-      memory: {{ env "MICRO_NFS_MEMORY" | default "256Mi" | quote }}
+      memory: {{ env "MICRO_NFS_MEMORY_REQUEST" | default "256Mi" | quote }}
 
 hermes:
   domain: {{ env "HERMES_DOMAIN" | default "hermes.level2.example.com" | quote }}
@@ -110,6 +110,7 @@ litellm:
 bifrost:
   domain: {{ env "BIFROST_DOMAIN" | default "bf.o.wingu.se" | quote }}
   publicDomain: {{ env "BIFROST_PUBLIC_DOMAIN" | default "gwl.o.wingu.se" | quote }}
+  replicaCount: {{ env "BIFROST_REPLICAS" | default "0" | int }}
   mtls:
     enabled: {{ eq (env "BIFROST_MTLS_ENABLED" | default "true") "true" }}
 
@@ -117,13 +118,13 @@ presidio:
   namespace: {{ env "PRESIDIO_NAMESPACE" | default "presidio" | quote }}
   presidioRegistry: {{ env "PRESIDIO_REGISTRY" | default "mcr.microsoft.com" | quote }}
   analyzer:
-    replicaCount: {{ env "PRESIDIO_ANALYZER_REPLICAS" | default "1" | int }}
+    replicaCount: {{ env "PRESIDIO_ANALYZER_REPLICAS" | default "0" | int }}
     image:
       registry: "mcr.microsoft.com"
       repository: "presidio-analyzer"
       tag: {{ env "PRESIDIO_ANALYZER_TAG" | default "latest" | quote }}
   anonymizer:
-    replicaCount: {{ env "PRESIDIO_ANONYMIZER_REPLICAS" | default "1" | int }}
+    replicaCount: {{ env "PRESIDIO_ANONYMIZER_REPLICAS" | default "0" | int }}
     image:
       registry: "mcr.microsoft.com"
       repository: "presidio-anonymizer"
@@ -150,6 +151,3 @@ omniroute:
     registry: {{ env "OMNIROUTE_REGISTRY" | default "docker.io" | quote }}
     repository: {{ env "OMNIROUTE_REPOSITORY" | default "diegosouzapw/omniroute" | quote }}
     tag: {{ env "OMNIROUTE_TAG" | default "v3.8.49" | quote }}
-
-
-
