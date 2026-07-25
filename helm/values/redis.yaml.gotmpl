@@ -1,0 +1,10 @@
+replicaCount: {{ .Values.redis.replicaCount }}
+image:
+  registry: {{ .Values.redis.image.registry | quote }}
+  repository: {{ .Values.redis.image.repository | quote }}
+  tag: {{ .Values.redis.image.tag | quote }}
+
+persistence:
+  enabled: true
+  storageClass: "micro-nfs"
+  size: 8Gi

@@ -138,8 +138,25 @@ releases:
     values:
       - values/presidio.yaml.gotmpl
 
+  - name: valkey
+    namespace: {{ .Values.valkey.namespace | quote }}
+    createNamespace: true
+    chart: ./charts/valkey
+    values:
+      - values/valkey.yaml.gotmpl
+
+  - name: omniroute
+    namespace: {{ .Values.omniroute.namespace | quote }}
+    createNamespace: true
+    chart: ./charts/omniroute
+    values:
+      - values/omniroute.yaml.gotmpl
+    needs:
+      - {{ .Values.valkey.namespace }}/valkey
+
   - name: system-patches
     namespace: kube-system
     chart: ./charts/system-patches
+
 
 

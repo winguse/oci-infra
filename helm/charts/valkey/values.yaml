@@ -1,0 +1,25 @@
+replicaCount: 1
+
+image:
+  registry: docker.io
+  repository: valkey/valkey
+  tag: "8.0-alpine"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 6379
+
+persistence:
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 8Gi
+  storageClass: "micro-nfs"
+  mountPath: /data
+
+resources:
+  limits:
+    memory: 256Mi
+  requests:
+    cpu: 50m
+    memory: 128Mi

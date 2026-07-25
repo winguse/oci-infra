@@ -1,0 +1,10 @@
+replicaCount: {{ .Values.valkey.replicaCount }}
+image:
+  registry: {{ .Values.valkey.image.registry | quote }}
+  repository: {{ .Values.valkey.image.repository | quote }}
+  tag: {{ .Values.valkey.image.tag | quote }}
+
+persistence:
+  enabled: true
+  storageClass: "micro-nfs"
+  size: 8Gi

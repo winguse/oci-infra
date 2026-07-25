@@ -1,0 +1,47 @@
+replicaCount: {{ .Values.omniroute.replicaCount }}
+image:
+  registry: {{ .Values.omniroute.image.registry | quote }}
+  repository: {{ .Values.omniroute.image.repository | quote }}
+  tag: {{ .Values.omniroute.image.tag | quote }}
+
+ingress:
+  enabled: true
+  className: "traefik"
+  dashboardHost: {{ .Values.omniroute.domain | quote }}
+  apiHost: {{ .Values.omniroute.apiDomain | quote }}
+  dashboardAnnotations: {}
+  apiAnnotations: {}
+
+tls:
+  commonSecretName: {{ .Values.tls.commonSecretName | quote }}
+
+mtls:
+  enabled: {{ .Values.omniroute.mtlsEnabled }}
+
+env:
+  NODE_ENV: "production"
+  PORT: "20128"
+  DASHBOARD_PORT: "20128"
+  API_PORT: "20129"
+  LIVE_WS_PORT: "20132"
+  LIVE_WS_HOST: "0.0.0.0"
+  API_HOST: "0.0.0.0"
+  HOSTNAME: "0.0.0.0"
+  DATA_DIR: "/app/data"
+  REDIS_URL: {{ printf "redis://valkey.%s.svc.cluster.local:6379" .Values.valkey.namespace | quote }}
+  LIVE_WS_ALLOWED_ORIGINS: {{ printf "https://%s" .Values.omniroute.domain | quote }}
+  REQUIRE_API_KEY: {{ .Values.omniroute.requireApiKey | quote }}
+
+
+existingSecret: "omniroute-secrets"
+
+resources:
+  limits:
+    memory: 1Gi
+  requests:
+    cpu: 200m
+    memory: 512Mi
+
+networkPolicy:
+  enabled: {{ .Values.omniroute.networkPolicy.enabled }}
+

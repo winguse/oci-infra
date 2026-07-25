@@ -1,4 +1,4 @@
-.PHONY: repos helm-apply helm-diff destroy acme-dns-secret hermes-secrets openclaw-secrets init-shared-db
+.PHONY: repos helm-apply helm-diff destroy acme-dns-secret hermes-secrets openclaw-secrets omniroute-secrets init-shared-db
 
 # KUBECTX ?= k3s
 #	kubectl config use-context $(KUBECTX)
@@ -40,10 +40,23 @@ openclaw-secrets:
 		--from-literal=OPENCLAW_GATEWAY_TOKEN="$$OPENCLAW_GATEWAY_TOKEN" \
 		--dry-run=client -o yaml | kubectl apply -f -
 
+omniroute-secrets:
+	set -a && . ./.env && set +a && \
+	OMNIROUTE_NS=$${OMNIROUTE_NAMESPACE:-omniroute} && \
+	kubectl get namespace $$OMNIROUTE_NS >/dev/null 2>&1 || kubectl create namespace $$OMNIROUTE_NS && \
+	kubectl create secret generic omniroute-secrets \
+		--namespace $$OMNIROUTE_NS \
+		--from-literal=OMNIROUTE_LOCAL_ENDPOINTS_TOKEN="$$OMNIROUTE_LOCAL_ENDPOINTS_TOKEN" \
+		--from-literal=OPENAI_API_KEY="$$OPENAI_API_KEY" \
+		--from-literal=ANTHROPIC_API_KEY="$$ANTHROPIC_API_KEY" \
+		--from-literal=GEMINI_API_KEY="$$GEMINI_API_KEY" \
+		--from-literal=DEEPSEEK_API_KEY="$$DEEPSEEK_API_KEY" \
+		--dry-run=client -o yaml | kubectl apply -f -
+
 init-shared-db:
 	chmod +x scripts/init-shared-db.py && ./scripts/init-shared-db.py
 
-helm-apply: acme-dns-secret hermes-secrets openclaw-secrets init-shared-db repos
+helm-apply: acme-dns-secret hermes-secrets openclaw-secrets omniroute-secrets init-shared-db repos
 	$(HELMFILE) sync
 
 # Requires helm-diff: helm plugin install https://github.com/databus23/helm-diff

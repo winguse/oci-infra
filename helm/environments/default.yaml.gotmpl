@@ -129,3 +129,27 @@ presidio:
       repository: "presidio-anonymizer"
       tag: {{ env "PRESIDIO_ANONYMIZER_TAG" | default "latest" | quote }}
 
+valkey:
+  namespace: {{ env "VALKEY_NAMESPACE" | default "valkey" | quote }}
+  replicaCount: {{ env "VALKEY_REPLICAS" | default "1" | int }}
+  image:
+    registry: {{ env "VALKEY_REGISTRY" | default "docker.io" | quote }}
+    repository: {{ env "VALKEY_REPOSITORY" | default "valkey/valkey" | quote }}
+    tag: {{ env "VALKEY_TAG" | default "8.0-alpine" | quote }}
+
+omniroute:
+  namespace: {{ env "OMNIROUTE_NAMESPACE" | default "omniroute" | quote }}
+  domain: {{ env "OMNIROUTE_DOMAIN" | default "omni.o.wingu.se" | quote }}
+  apiDomain: {{ env "OMNIROUTE_API_DOMAIN" | default "omni-api.o.wingu.se" | quote }}
+  replicaCount: {{ env "OMNIROUTE_REPLICAS" | default "1" | int }}
+  mtlsEnabled: {{ eq (env "OMNIROUTE_MTLS_ENABLED" | default "true") "true" }}
+  networkPolicy:
+    enabled: {{ eq (env "OMNIROUTE_NETWORK_POLICY_ENABLED" | default "true") "true" }}
+  requireApiKey: "true"
+  image:
+    registry: {{ env "OMNIROUTE_REGISTRY" | default "docker.io" | quote }}
+    repository: {{ env "OMNIROUTE_REPOSITORY" | default "diegosouzapw/omniroute" | quote }}
+    tag: {{ env "OMNIROUTE_TAG" | default "v3.8.49" | quote }}
+
+
+

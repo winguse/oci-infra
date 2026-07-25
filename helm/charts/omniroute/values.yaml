@@ -1,0 +1,72 @@
+replicaCount: 1
+
+image:
+  registry: docker.io
+  repository: diegosouzapw/omniroute
+  tag: "v3.8.49"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  dashboardPort: 20128
+  apiPort: 20129
+  liveWsPort: 20132
+
+ingress:
+  enabled: false
+  className: "traefik"
+  dashboardHost: omni.o.wingu.se
+  apiHost: omni-api.o.wingu.se
+  dashboardAnnotations: {}
+  apiAnnotations: {}
+
+tls:
+  commonSecretName: "common-tls"
+
+mtls:
+  enabled: true
+
+persistence:
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 10Gi
+  storageClass: "micro-nfs"
+  mountPath: /app/data
+
+# Non-secret environment variables to pass directly to the container
+env:
+  NODE_ENV: "production"
+  PORT: "20128"
+  DASHBOARD_PORT: "20128"
+  API_PORT: "20129"
+  LIVE_WS_PORT: "20132"
+  LIVE_WS_HOST: "0.0.0.0"
+  API_HOST: "0.0.0.0"
+  HOSTNAME: "0.0.0.0"
+  DATA_DIR: "/app/data"
+  REDIS_URL: "redis://valkey.valkey.svc.cluster.local:6379"
+  LIVE_WS_ALLOWED_ORIGINS: "https://omni.o.wingu.se"
+  REQUIRE_API_KEY: "true"
+
+
+# Secret name containing sensitive API keys and other configurations
+existingSecret: "omniroute-secrets"
+
+resources:
+  limits:
+    memory: 1Gi
+  requests:
+    cpu: 200m
+    memory: 512Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+networkPolicy:
+  enabled: true
+  ingressLabels:
+    app.kubernetes.io/name: traefik
+  ingressNamespaceLabels:
+    kubernetes.io/metadata.name: kube-system
+

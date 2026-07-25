@@ -41,3 +41,13 @@ do not read credentials file `.env`, when coding only use `.env.example`
 - **Components**: Separated into `presidio-analyzer` and `presidio-anonymizer` deployments/services, exposing their REST APIs internally on port `3000`.
 - **LiteLLM Integration**: Integrated with the LiteLLM proxy for PII detection/guardrails by passing the `PRESIDIO_ANALYZER_API_BASE` and `PRESIDIO_ANONYMIZER_API_BASE` environment variables to the LiteLLM deployment.
 
+## 8. OmniRoute AI Gateway & Valkey Deployment
+- **Dedicated Namespaces**: OmniRoute is deployed to its own namespace (configurable via `OMNIROUTE_NAMESPACE`, defaulting to `omniroute`). Valkey is also deployed to its own namespace (configurable via `VALKEY_NAMESPACE`, defaulting to `valkey`) to keep workloads isolated.
+- **Cross-Namespace Sharing**: OmniRoute connects to the Valkey service across namespaces using the FQDN: `valkey.<valkey-namespace>.svc.cluster.local:6379`.
+- **Secret Generation**: Credentials and API keys (such as `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, etc.) are configured via `.env` / `.env.example` and loaded into the `omniroute-secrets` Kubernetes Secret using the Makefile's `omniroute-secrets` target.
+- **Dual Domain Routing & mTLS**: OmniRoute is exposed via two separate Ingresses:
+  - **Dashboard**: Exposed on a dedicated domain (e.g. `omni.o.wingu.se` via `OMNIROUTE_DOMAIN`) and protected with client cert mTLS verification.
+  - **LLM API Route**: Exposed on a separate domain (e.g. `omni-api.o.wingu.se` via `OMNIROUTE_API_DOMAIN`) without mTLS to allow seamless API access.
+
+
+
