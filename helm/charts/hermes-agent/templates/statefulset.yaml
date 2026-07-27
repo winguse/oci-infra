@@ -100,7 +100,7 @@ spec:
           securityContext:
             {{- toYaml .Values.codeServer.securityContext | nindent 12 }}
           {{- end }}
-          image: "{{ .Values.codeServer.image.repository }}:{{ .Values.codeServer.image.tag | default "latest" }}"
+          image: "{{ .Values.codeServer.image.repository }}:{{ .Values.codeServer.image.tag | default "4.17.1" }}"
           imagePullPolicy: {{ .Values.codeServer.image.pullPolicy | default "IfNotPresent" }}
           {{- if .Values.codeServer.args }}
           args:

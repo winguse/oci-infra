@@ -3,4 +3,4 @@ name: openclaw
 description: A Helm chart for deploying OpenClaw to Kubernetes
 type: application
 version: 0.1.0
-appVersion: "latest"
+appVersion: "2026.7.2-beta.5-browser"

@@ -1,6 +1,0 @@
-apiVersion: v2
-name: redis
-description: A local Helm chart for deploying Redis for OmniRoute
-type: application
-version: 0.1.0
-appVersion: "8.6.2-alpine"

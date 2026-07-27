@@ -3,4 +3,4 @@ name: valkey
 description: A local Helm chart for deploying Valkey
 type: application
 version: 0.1.0
-appVersion: "8.0-alpine"
+appVersion: "9.1.1-alpine"

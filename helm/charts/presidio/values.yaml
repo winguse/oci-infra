@@ -5,7 +5,7 @@ analyzer:
   image:
     registry: mcr.microsoft.com
     repository: presidio-analyzer
-    tag: latest
+    tag: "v0.3s"
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
@@ -22,7 +22,7 @@ anonymizer:
   image:
     registry: mcr.microsoft.com
     repository: presidio-anonymizer
-    tag: latest
+    tag: "v0.3s"
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP

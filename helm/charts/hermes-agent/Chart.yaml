@@ -3,4 +3,4 @@ name: hermes-agent
 description: A Helm chart for deploying Nous Research Hermes Agent to Kubernetes
 type: application
 version: 0.1.0
-appVersion: "latest"
+appVersion: "v2026.7.20"

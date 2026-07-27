@@ -3,7 +3,7 @@ replicaCount: 1
 image:
   registry: ghcr.io
   repository: winguse/fas
-  tag: "latest"
+  tag: "0.0.1"
   pullPolicy: IfNotPresent
 
 service:

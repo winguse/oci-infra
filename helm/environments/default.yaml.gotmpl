@@ -136,7 +136,7 @@ valkey:
   image:
     registry: {{ env "VALKEY_REGISTRY" | default "docker.io" | quote }}
     repository: {{ env "VALKEY_REPOSITORY" | default "valkey/valkey" | quote }}
-    tag: {{ env "VALKEY_TAG" | default "8.0-alpine" | quote }}
+    tag: {{ env "VALKEY_TAG" | default "9.1.1-alpine" | quote }}
 
 omniroute:
   namespace: {{ env "OMNIROUTE_NAMESPACE" | default "omniroute" | quote }}
@@ -150,7 +150,7 @@ omniroute:
   image:
     registry: {{ env "OMNIROUTE_REGISTRY" | default "docker.io" | quote }}
     repository: {{ env "OMNIROUTE_REPOSITORY" | default "diegosouzapw/omniroute" | quote }}
-    tag: {{ env "OMNIROUTE_TAG" | default "v3.8.49" | quote }}
+    tag: {{ env "OMNIROUTE_TAG" | default "3.8.48-web" | quote }}
 
 fas:
   namespace: {{ env "FAS_NAMESPACE" | default "fas" | quote }}

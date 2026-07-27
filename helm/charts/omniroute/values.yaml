@@ -3,7 +3,7 @@ replicaCount: 1
 image:
   registry: docker.io
   repository: diegosouzapw/omniroute
-  tag: "v3.8.49"
+  tag: "3.8.48-web"
   pullPolicy: IfNotPresent
 
 service:
