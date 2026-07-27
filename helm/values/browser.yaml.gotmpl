@@ -1,0 +1,32 @@
+replicaCount: {{ .Values.browser.replicaCount }}
+
+image:
+  registry: {{ .Values.browser.image.registry | quote }}
+  repository: {{ .Values.browser.image.repository | quote }}
+  tag: {{ .Values.browser.image.tag | quote }}
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: true
+  className: {{ dig "ingress" "className" "traefik" .Values | quote }}
+  domain: {{ .Values.browser.domain | quote }}
+  annotations: {}
+
+tls:
+  commonSecretName: {{ .Values.tls.commonSecretName | quote }}
+
+fas:
+  enabled: true
+  namespace: {{ .Values.browser.fas.namespace | quote }}
+  middlewareName: {{ .Values.browser.fas.middlewareName | quote }}
+
+resources:
+  limits:
+    memory: 512Mi
+  requests:
+    cpu: 50m
+    memory: 128Mi

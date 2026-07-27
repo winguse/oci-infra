@@ -1,0 +1,6 @@
+apiVersion: v2
+name: browser
+description: A local Helm chart for Browser service (HeyPuter/browser.js & Firefox WASM)
+type: application
+version: 0.1.0
+appVersion: "latest"

@@ -48,3 +48,10 @@ do not read credentials file `.env`, when coding only use `.env.example`
 - **Dual Domain Routing & mTLS**: OmniRoute is exposed via two separate Ingresses:
   - **Dashboard**: Exposed on a dedicated domain (e.g. `omni.o.wingu.se` via `OMNIROUTE_DOMAIN`) and protected with client cert mTLS verification.
   - **LLM API Route**: Exposed on a separate domain (e.g. `omni-api.o.wingu.se` via `OMNIROUTE_API_DOMAIN`) without mTLS to allow seamless API access.
+
+## 9. Forward Auth Service (FAS) & Browser Deployment
+- **Dedicated Namespaces**: FAS is deployed to its own namespace (configurable via `FAS_NAMESPACE`, defaulting to `fas`). Browser is deployed to its own namespace (configurable via `BROWSER_NAMESPACE`, defaulting to `browser`).
+- **FAS Admin & mTLS**: The FAS admin dashboard is exposed on `a.o.wingu.se` (via `FAS_DOMAIN`) and protected with client certificate mTLS verification.
+- **FAS Network Policy**: Port 8080 ingress to FAS is strictly restricted to Traefik ingress proxy pods in the `kube-system` namespace and internal namespace pod-to-pod communication via a Kubernetes `NetworkPolicy`.
+- **Browser Service & FAS ForwardAuth Integration**: The Browser service (`ghcr.io/winguse/browser:latest`) is exposed on `s.o.wingu.se` (via `BROWSER_DOMAIN`). Its Ingress uses the Traefik `ForwardAuth` Middleware CRD provided by FAS (`fas-fas-auth@kubernetescrd`) to authenticate incoming user requests before routing to the application.
+

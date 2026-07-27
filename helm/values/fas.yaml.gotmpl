@@ -1,0 +1,49 @@
+replicaCount: {{ .Values.fas.replicaCount }}
+
+image:
+  registry: {{ .Values.fas.image.registry | quote }}
+  repository: {{ .Values.fas.image.repository | quote }}
+  tag: {{ .Values.fas.image.tag | quote }}
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: true
+  className: {{ dig "ingress" "className" "traefik" .Values | quote }}
+  domain: {{ .Values.fas.domain | quote }}
+  annotations: {}
+
+tls:
+  commonSecretName: {{ .Values.tls.commonSecretName | quote }}
+
+mtls:
+  enabled: {{ .Values.fas.mtls.enabled }}
+
+persistence:
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 5Gi
+  storageClass: "micro-nfs"
+  mountPath: /data
+
+env:
+  FAS_PORT: "8080"
+  FAS_DATA_FILE: "/data/fas.jsonl"
+  FAS_ACL_FILE: "/data/acl.yaml"
+
+resources:
+  limits:
+    memory: 512Mi
+  requests:
+    cpu: 50m
+    memory: 128Mi
+
+networkPolicy:
+  enabled: {{ .Values.fas.networkPolicy.enabled }}
+  ingressLabels:
+    app.kubernetes.io/name: traefik
+  ingressNamespaceLabels:
+    kubernetes.io/metadata.name: kube-system

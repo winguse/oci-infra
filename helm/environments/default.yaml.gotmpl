@@ -151,3 +151,29 @@ omniroute:
     registry: {{ env "OMNIROUTE_REGISTRY" | default "docker.io" | quote }}
     repository: {{ env "OMNIROUTE_REPOSITORY" | default "diegosouzapw/omniroute" | quote }}
     tag: {{ env "OMNIROUTE_TAG" | default "v3.8.49" | quote }}
+
+fas:
+  namespace: {{ env "FAS_NAMESPACE" | default "fas" | quote }}
+  domain: {{ env "FAS_DOMAIN" | default "a.o.wingu.se" | quote }}
+  replicaCount: {{ env "FAS_REPLICAS" | default "1" | int }}
+  mtls:
+    enabled: {{ eq (env "FAS_MTLS_ENABLED" | default "true") "true" }}
+  networkPolicy:
+    enabled: {{ eq (env "FAS_NETWORK_POLICY_ENABLED" | default "true") "true" }}
+  image:
+    registry: {{ env "FAS_REGISTRY" | default "ghcr.io" | quote }}
+    repository: {{ env "FAS_REPOSITORY" | default "winguse/fas" | quote }}
+    tag: {{ env "FAS_TAG" | default "latest" | quote }}
+
+browser:
+  namespace: {{ env "BROWSER_NAMESPACE" | default "browser" | quote }}
+  domain: {{ env "BROWSER_DOMAIN" | default "s.o.wingu.se" | quote }}
+  replicaCount: {{ env "BROWSER_REPLICAS" | default "1" | int }}
+  image:
+    registry: {{ env "BROWSER_REGISTRY" | default "ghcr.io" | quote }}
+    repository: {{ env "BROWSER_REPOSITORY" | default "winguse/browser" | quote }}
+    tag: {{ env "BROWSER_TAG" | default "latest" | quote }}
+  fas:
+    namespace: {{ env "FAS_NAMESPACE" | default "fas" | quote }}
+    middlewareName: {{ env "FAS_MIDDLEWARE_NAME" | default "fas-auth" | quote }}
+

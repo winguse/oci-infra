@@ -154,9 +154,29 @@ releases:
     needs:
       - {{ .Values.valkey.namespace }}/valkey
 
+  - name: fas
+    namespace: {{ .Values.fas.namespace | quote }}
+    createNamespace: true
+    chart: ./charts/fas
+    values:
+      - values/fas.yaml.gotmpl
+    needs:
+      - cert-manager/cert-manager
+      - kube-system/micro-nfs
+
+  - name: browser
+    namespace: {{ .Values.browser.namespace | quote }}
+    createNamespace: true
+    chart: ./charts/browser
+    values:
+      - values/browser.yaml.gotmpl
+    needs:
+      - {{ .Values.fas.namespace }}/fas
+
   - name: system-patches
     namespace: kube-system
     chart: ./charts/system-patches
+
 
 
 

@@ -1,0 +1,33 @@
+{{- if .Values.networkPolicy.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "fas.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "fas.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "fas.selectorLabels" . | nindent 8 }}
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow ingress ONLY from Traefik
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              {{- toYaml .Values.networkPolicy.ingressNamespaceLabels | nindent 14 }}
+          podSelector:
+            matchLabels:
+              {{- toYaml .Values.networkPolicy.ingressLabels | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.service.port }}
+    # Allow local pod-to-pod/internal namespace communication
+    - from:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.service.port }}
+{{- end }}
