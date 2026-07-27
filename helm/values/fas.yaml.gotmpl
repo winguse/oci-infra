@@ -34,6 +34,8 @@ env:
   FAS_DATA_FILE: "/data/fas.jsonl"
   FAS_ACL_FILE: "/data/acl.yaml"
 
+sharedSecret: {{ env "FAS_SHARED_SECRET" | default "" | quote }}
+
 resources:
   limits:
     memory: 512Mi

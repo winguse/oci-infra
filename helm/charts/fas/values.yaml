@@ -3,7 +3,7 @@ replicaCount: 1
 image:
   registry: ghcr.io
   repository: winguse/fas
-  tag: "0.0.2"
+  tag: "0.0.3"
   pullPolicy: IfNotPresent
 
 service:
@@ -33,6 +33,11 @@ env:
   FAS_PORT: "8080"
   FAS_DATA_FILE: "/data/fas.jsonl"
   FAS_ACL_FILE: "/data/acl.yaml"
+
+# When set, creates a Kubernetes Secret and a Traefik Headers middleware that
+# injects the X-Shared-Secret header into every request Traefik forwards to FAS.
+# FAS_SHARED_SECRET is also exposed to the FAS container for request validation.
+sharedSecret: ""
 
 resources:
   limits:

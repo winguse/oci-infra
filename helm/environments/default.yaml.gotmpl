@@ -122,13 +122,13 @@ presidio:
     image:
       registry: "mcr.microsoft.com"
       repository: "presidio-analyzer"
-      tag: {{ env "PRESIDIO_ANALYZER_TAG" | default "latest" | quote }}
+      tag: "v0.3s"
   anonymizer:
     replicaCount: {{ env "PRESIDIO_ANONYMIZER_REPLICAS" | default "0" | int }}
     image:
       registry: "mcr.microsoft.com"
       repository: "presidio-anonymizer"
-      tag: {{ env "PRESIDIO_ANONYMIZER_TAG" | default "latest" | quote }}
+      tag: "v0.3s"
 
 valkey:
   namespace: {{ env "VALKEY_NAMESPACE" | default "valkey" | quote }}
@@ -163,7 +163,7 @@ fas:
   image:
     registry: {{ env "FAS_REGISTRY" | default "ghcr.io" | quote }}
     repository: {{ env "FAS_REPOSITORY" | default "winguse/fas" | quote }}
-    tag: {{ env "FAS_TAG" | default "latest" | quote }}
+    tag: "0.0.3"
 
 browser:
   namespace: {{ env "BROWSER_NAMESPACE" | default "browser" | quote }}
@@ -172,11 +172,9 @@ browser:
   image:
     registry: {{ env "BROWSER_REGISTRY" | default "ghcr.io" | quote }}
     repository: {{ env "BROWSER_REPOSITORY" | default "winguse/browser" | quote }}
-    tag: {{ env "BROWSER_TAG" | default "latest" | quote }}
+    tag: "v0.0.1"
   fas:
     namespace: {{ env "FAS_NAMESPACE" | default "fas" | quote }}
     middlewareName: {{ env "FAS_MIDDLEWARE_NAME" | default "fas-auth" | quote }}
   networkPolicy:
     enabled: {{ eq (env "BROWSER_NETWORK_POLICY_ENABLED" | default "true") "true" }}
-
-

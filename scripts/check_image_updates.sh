@@ -194,7 +194,7 @@ process_image "omniroute"      "dockerhub" "diegosouzapw/omniroute"         "tag
 process_image "openclaw"       "dockerhub" "openclaw/openclaw"              "tag"        "default" "helm/charts/openclaw/Chart.yaml"       "helm/charts/openclaw/values.yaml"       ""
 process_image "platform"       "dockerhub" "cloudflare/cloudflared"         "cloudflared" "semver"  ""                                      "helm/charts/platform/templates/cloudflared.yaml" ""
 process_image "presidio"       "mcr"       "presidio-analyzer"              "analyzer"   "semver"  "helm/charts/presidio/Chart.yaml"       "helm/charts/presidio/values.yaml"       "PRESIDIO_ANALYZER_TAG"
-process_image "presidio"       "mcr"       "presidio-anonymizer"            "anonymizer" "semver"  ""                                      "helm/charts/presidio/values.yaml"       "PRESIDIO_ANONYMIZER_TAG"
+process_image "presidio"       "mcr"       "presidio-anonymizer"            "anonymizer" "semver"  ""                                      "helm/charts/presidio/values.yaml"       ""
 process_image "system-patches" "dockerhub" "bitnami/kubectl"                "kubectl"    "latest"  ""                                      "helm/charts/system-patches/templates/job.yaml" ""
 process_image "valkey"         "dockerhub" "valkey/valkey"                  "tag"        "alpine"  "helm/charts/valkey/Chart.yaml"         "helm/charts/valkey/values.yaml"         "VALKEY_TAG"
 

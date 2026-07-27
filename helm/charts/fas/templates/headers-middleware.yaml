@@ -1,0 +1,13 @@
+{{- if .Values.sharedSecret }}
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ include "fas.fullname" . }}-shared-secret
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "fas.labels" . | nindent 4 }}
+spec:
+  headers:
+    customRequestHeaders:
+      X-Shared-Secret: {{ .Values.sharedSecret | quote }}
+{{- end }}

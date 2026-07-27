@@ -11,6 +11,9 @@ metadata:
     traefik.ingress.kubernetes.io/router.tls: "true"
     traefik.ingress.kubernetes.io/router.tls.options: {{ printf "%s-%s-mtls@kubernetescrd" .Release.Namespace $fullName | quote }}
     {{- end }}
+    {{- if .Values.sharedSecret }}
+    traefik.ingress.kubernetes.io/router.middlewares: {{ printf "%s-%s-shared-secret@kubernetescrd" .Release.Namespace $fullName | quote }}
+    {{- end }}
     {{- with .Values.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
