@@ -176,4 +176,7 @@ browser:
   fas:
     namespace: {{ env "FAS_NAMESPACE" | default "fas" | quote }}
     middlewareName: {{ env "FAS_MIDDLEWARE_NAME" | default "fas-auth" | quote }}
+  networkPolicy:
+    enabled: {{ eq (env "BROWSER_NETWORK_POLICY_ENABLED" | default "true") "true" }}
+
 

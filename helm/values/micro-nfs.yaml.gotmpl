@@ -1,6 +1,6 @@
 backingStorage:
   size: {{ .Values.microNfs.backingStorage.size | quote }}
-  {{- if .Values.microNfs.backingStorage.volumeName }}
+  {{- if hasKey .Values.microNfs.backingStorage "volumeName" }}
   storageClassName: ""
   volumeName: {{ .Values.microNfs.backingStorage.volumeName | quote }}
   volumeHandle: {{ .Values.microNfs.backingStorage.volumeHandle | quote }}

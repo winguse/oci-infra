@@ -1,0 +1,51 @@
+{{- if .Values.networkPolicy.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "browser.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "browser.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "browser.selectorLabels" . | nindent 8 }}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow ingress ONLY from Traefik ingress proxy
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              {{- toYaml .Values.networkPolicy.ingressNamespaceLabels | nindent 14 }}
+          podSelector:
+            matchLabels:
+              {{- toYaml .Values.networkPolicy.ingressLabels | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.service.port }}
+    # Allow local pod-to-pod/internal namespace communication
+    - from:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.service.port }}
+  egress:
+    # Allow DNS resolution to CoreDNS/kube-dns
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              {{- toYaml .Values.networkPolicy.dnsNamespaceLabels | nindent 14 }}
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # Allow egress ONLY to public internet (0.0.0.0/0 except private/internal CIDRs)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              {{- toYaml .Values.networkPolicy.privateCidrsExcept | nindent 14 }}
+{{- end }}

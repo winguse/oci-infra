@@ -54,6 +54,8 @@ do not read credentials file `.env`, when coding only use `.env.example`
 - **FAS Admin & mTLS**: The FAS admin dashboard is exposed on `a.o.wingu.se` (via `FAS_DOMAIN`) and protected with client certificate mTLS verification.
 - **FAS Network Policy**: Port 8080 ingress to FAS is strictly restricted to Traefik ingress proxy pods in the `kube-system` namespace and internal namespace pod-to-pod communication via a Kubernetes `NetworkPolicy`.
 - **Browser Service & FAS ForwardAuth Integration**: The Browser service (`ghcr.io/winguse/browser`) is exposed on `s.o.wingu.se` (via `BROWSER_DOMAIN`). Its Ingress uses the Traefik `ForwardAuth` Middleware CRD provided by FAS (`fas-fas-auth@kubernetescrd`) to authenticate incoming user requests before routing to the application.
+- **Browser Egress Network Policy Isolation**: The Browser service is isolated via a Kubernetes `NetworkPolicy` resource (`networkpolicy.yaml`). Egress is strictly restricted to public internet IPs (`0.0.0.0/0`) and DNS resolution (`kube-dns`), explicitly denying egress access to internal private network CIDRs (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `100.64.0.0/10`, and cloud metadata `169.254.0.0/16`).
+
 
 ## 10. Container Image Version Management & Upgrade Workflow
 - **Explicit Version Tagging**: All local Helm chart definitions (`Chart.yaml`), values files (`values.yaml`), and environment configurations (`default.yaml.gotmpl`) must explicitly specify non-`latest` image tags (e.g. semver or release tags). Avoid using `:latest` tags in deployment manifests.
