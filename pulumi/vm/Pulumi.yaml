@@ -1,0 +1,10 @@
+name: vm
+description: AMD-based Compute VM instance on Oracle Cloud Infrastructure
+runtime:
+  name: nodejs
+  options:
+    packagemanager: npm
+config:
+  pulumi:tags:
+    value:
+      pulumi:template: typescript

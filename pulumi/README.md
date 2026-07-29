@@ -5,6 +5,7 @@ This directory contains our infrastructure provisioning modules for Oracle Cloud
 ## Modules
 
 - [oke](file:///Users/yingyu/workspace/infra/pulumi/oke): An OCI Container Engine for Kubernetes (OKE) managed cluster utilizing `VM.Standard.A1.Flex` worker nodes with automated control-plane management.
+- [vm](./vm): A standalone AMD-based Compute VM (`VM.Standard.E5.Flex`) with 1/8 OCPU and 1 GB memory — ideal for lightweight workloads. Includes a dedicated VCN/subnet with public IP and SSH access via GitHub keys.
 
 ## Usage
 

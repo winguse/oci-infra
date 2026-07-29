@@ -1,0 +1,15 @@
+config:
+  # The OCI compartment OCID where the resources will be created (Ubuntu 22.04 / AMD E5 Flex)
+  vm:compartmentId: "ocid1.compartment.oc1..aaaaaaaaxqjbrsvrn35d4djrbfg3sg5tbphc6syqqloqtawtgq3xo6dg73la"
+  # GitHub username to download SSH keys from
+  vm:githubUsername: "winguse"
+  # VM.Standard.E2.1.Micro
+  vm:shape: "VM.Standard.E2.1.Micro"
+  # 1 OCPU
+  vm:ocpus: "1"
+  # 1 GB memory
+  vm:memoryInGbs: "1"
+  # Display name for the instance
+  vm:instanceName: "amd-micro-vm"
+  # OCI provider region
+  oci:region: "us-sanjose-1"
