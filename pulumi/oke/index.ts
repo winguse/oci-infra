@@ -187,6 +187,11 @@ const endpointSecurityList = new oci.core.SecurityList("oke-endpoint-security-li
       protocol: "all",
       destinationType: "CIDR_BLOCK",
     },
+    {
+      destination: "::/0",
+      protocol: "all",
+      destinationType: "CIDR_BLOCK",
+    },
   ],
   ingressSecurityRules: [
     {
@@ -224,7 +229,7 @@ const endpointSecurityList = new oci.core.SecurityList("oke-endpoint-security-li
   ],
 });
 
-// Security list for Load Balancer Subnet (handles public incoming HTTP/HTTPS traffic)
+// Security list for Load Balancer Subnet (handles public incoming HTTP/HTTPS/HTTP3 traffic)
 const lbSecurityList = new oci.core.SecurityList("oke-lb-security-list", {
   compartmentId: okeCompartment.id,
   vcnId: vcn.id,
@@ -232,6 +237,11 @@ const lbSecurityList = new oci.core.SecurityList("oke-lb-security-list", {
   egressSecurityRules: [
     {
       destination: "0.0.0.0/0",
+      protocol: "all",
+      destinationType: "CIDR_BLOCK",
+    },
+    {
+      destination: "::/0",
       protocol: "all",
       destinationType: "CIDR_BLOCK",
     },
@@ -266,6 +276,20 @@ const lbSecurityList = new oci.core.SecurityList("oke-lb-security-list", {
       description: "Allow HTTPS IPv6",
     },
     {
+      protocol: "17", // UDP
+      source: "0.0.0.0/0",
+      sourceType: "CIDR_BLOCK",
+      udpOptions: { min: 443, max: 443 },
+      description: "Allow HTTP/3 (QUIC) UDP",
+    },
+    {
+      protocol: "17", // UDP
+      source: "::/0",
+      sourceType: "CIDR_BLOCK",
+      udpOptions: { min: 443, max: 443 },
+      description: "Allow HTTP/3 (QUIC) UDP IPv6",
+    },
+    {
       protocol: "58", // ICMPv6
       source: "::/0",
       sourceType: "CIDR_BLOCK",
@@ -286,7 +310,7 @@ const lbSecurityList = new oci.core.SecurityList("oke-lb-security-list", {
   ],
 });
 
-// Security list for Host Nodes Subnet (disables public SSH, HTTP, HTTPS exposure)
+// Security list for Host Nodes Subnet
 const nodeSecurityList = new oci.core.SecurityList("oke-node-security-list", {
   compartmentId: okeCompartment.id,
   vcnId: vcn.id,
@@ -294,6 +318,11 @@ const nodeSecurityList = new oci.core.SecurityList("oke-node-security-list", {
   egressSecurityRules: [
     {
       destination: "0.0.0.0/0",
+      protocol: "all",
+      destinationType: "CIDR_BLOCK",
+    },
+    {
+      destination: "::/0",
       protocol: "all",
       destinationType: "CIDR_BLOCK",
     },
@@ -318,42 +347,42 @@ const nodeSecurityList = new oci.core.SecurityList("oke-node-security-list", {
       source: "0.0.0.0/0",
       sourceType: "CIDR_BLOCK",
       tcpOptions: { min: 31080, max: 31080 },
-      description: "Allow Traefik HTTP NodePort",
+      description: "Allow Envoy HTTP NodePort",
     },
     {
       protocol: "6", // TCP
       source: "::/0",
       sourceType: "CIDR_BLOCK",
       tcpOptions: { min: 31080, max: 31080 },
-      description: "Allow Traefik HTTP NodePort IPv6",
+      description: "Allow Envoy HTTP NodePort IPv6",
     },
     {
       protocol: "6", // TCP
       source: "0.0.0.0/0",
       sourceType: "CIDR_BLOCK",
       tcpOptions: { min: 31332, max: 31332 },
-      description: "Allow Traefik HTTPS NodePort",
+      description: "Allow Envoy HTTPS NodePort",
     },
     {
       protocol: "6", // TCP
       source: "::/0",
       sourceType: "CIDR_BLOCK",
       tcpOptions: { min: 31332, max: 31332 },
-      description: "Allow Traefik HTTPS NodePort IPv6",
+      description: "Allow Envoy HTTPS NodePort IPv6",
     },
     {
       protocol: "6", // TCP
       source: "0.0.0.0/0",
       sourceType: "CIDR_BLOCK",
       tcpOptions: { min: 30122, max: 30122 },
-      description: "Allow Traefik Health Check NodePort",
+      description: "Allow Envoy Health Check NodePort",
     },
     {
       protocol: "6", // TCP
       source: "::/0",
       sourceType: "CIDR_BLOCK",
       tcpOptions: { min: 30122, max: 30122 },
-      description: "Allow Traefik Health Check NodePort IPv6",
+      description: "Allow Envoy Health Check NodePort IPv6",
     },
     {
       protocol: "58", // ICMPv6
