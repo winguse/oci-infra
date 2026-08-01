@@ -177,7 +177,6 @@ process_image() {
 
 echo -e "${CYAN}--- Processing Chart Image Configurations ---${NC}"
 
-process_image "bifrost"        "dockerhub" "maximhq/bifrost"                 "tag"        "semver"  "helm/charts/bifrost/Chart.yaml"        "helm/charts/bifrost/values.yaml"
 process_image "browser"        "ghcr"      "winguse/browser"                "tag"        "default" "helm/charts/browser/Chart.yaml"        "helm/charts/browser/values.yaml"
 process_image "fas"            "ghcr"      "winguse/fas"                    "tag"        "semver"  "helm/charts/fas/Chart.yaml"            "helm/charts/fas/values.yaml"
 process_image "hermes-agent"  "dockerhub" "nousresearch/hermes-agent"        "tag"        "default" "helm/charts/hermes-agent/Chart.yaml"   "helm/charts/hermes-agent/values.yaml"
