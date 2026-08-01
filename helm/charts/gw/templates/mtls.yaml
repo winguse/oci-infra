@@ -1,16 +1,80 @@
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: ClientTrafficPolicy
 metadata:
-  name: envoy-mtls
+  name: envoy-mtls-a
   namespace: {{ .Release.Namespace }}
 spec:
   targetRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
       name: envoy
+      sectionName: https-mtls-a
   tls:
     clientValidation:
-      optional: true
+      caCertificateRefs:
+        - name: mtls-ca-bundle
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  name: envoy-mtls-hm
+  namespace: {{ .Release.Namespace }}
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: envoy
+      sectionName: https-mtls-hm
+  tls:
+    clientValidation:
+      caCertificateRefs:
+        - name: mtls-ca-bundle
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  name: envoy-mtls-hmc
+  namespace: {{ .Release.Namespace }}
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: envoy
+      sectionName: https-mtls-hmc
+  tls:
+    clientValidation:
+      caCertificateRefs:
+        - name: mtls-ca-bundle
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  name: envoy-mtls-omni
+  namespace: {{ .Release.Namespace }}
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: envoy
+      sectionName: https-mtls-omni
+  tls:
+    clientValidation:
+      caCertificateRefs:
+        - name: mtls-ca-bundle
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  name: envoy-mtls-oc
+  namespace: {{ .Release.Namespace }}
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: envoy
+      sectionName: https-mtls-oc
+  tls:
+    clientValidation:
       caCertificateRefs:
         - name: mtls-ca-bundle
 ---

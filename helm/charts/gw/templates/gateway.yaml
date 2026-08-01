@@ -55,6 +55,106 @@ spec:
       allowedRoutes:
         namespaces:
           from: All
+    - name: https-mtls-a
+      protocol: HTTPS
+      port: 443
+      hostname: "a.i.wingu.se"
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - group: ""
+            kind: Secret
+            name: {{ .Values.tls.commonSecretName | default "common-tls" | quote }}
+            namespace: {{ .Release.Namespace | quote }}
+          {{- if .Values.tls.coderSecretName }}
+          - group: ""
+            kind: Secret
+            name: {{ .Values.tls.coderSecretName | quote }}
+            namespace: {{ .Release.Namespace | quote }}
+          {{- end }}
+    - name: https-mtls-hm
+      protocol: HTTPS
+      port: 443
+      hostname: "hm.i.wingu.se"
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - group: ""
+            kind: Secret
+            name: {{ .Values.tls.commonSecretName | default "common-tls" | quote }}
+            namespace: {{ .Release.Namespace | quote }}
+          {{- if .Values.tls.coderSecretName }}
+          - group: ""
+            kind: Secret
+            name: {{ .Values.tls.coderSecretName | quote }}
+            namespace: {{ .Release.Namespace | quote }}
+          {{- end }}
+    - name: https-mtls-hmc
+      protocol: HTTPS
+      port: 443
+      hostname: "hmc.i.wingu.se"
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - group: ""
+            kind: Secret
+            name: {{ .Values.tls.commonSecretName | default "common-tls" | quote }}
+            namespace: {{ .Release.Namespace | quote }}
+          {{- if .Values.tls.coderSecretName }}
+          - group: ""
+            kind: Secret
+            name: {{ .Values.tls.coderSecretName | quote }}
+            namespace: {{ .Release.Namespace | quote }}
+          {{- end }}
+    - name: https-mtls-omni
+      protocol: HTTPS
+      port: 443
+      hostname: "omni.i.wingu.se"
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - group: ""
+            kind: Secret
+            name: {{ .Values.tls.commonSecretName | default "common-tls" | quote }}
+            namespace: {{ .Release.Namespace | quote }}
+          {{- if .Values.tls.coderSecretName }}
+          - group: ""
+            kind: Secret
+            name: {{ .Values.tls.coderSecretName | quote }}
+            namespace: {{ .Release.Namespace | quote }}
+          {{- end }}
+    - name: https-mtls-oc
+      protocol: HTTPS
+      port: 443
+      hostname: "oc.i.wingu.se"
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - group: ""
+            kind: Secret
+            name: {{ .Values.tls.commonSecretName | default "common-tls" | quote }}
+            namespace: {{ .Release.Namespace | quote }}
+          {{- if .Values.tls.coderSecretName }}
+          - group: ""
+            kind: Secret
+            name: {{ .Values.tls.coderSecretName | quote }}
+            namespace: {{ .Release.Namespace | quote }}
+          {{- end }}
     - name: https
       protocol: HTTPS
       port: 443
@@ -68,3 +168,9 @@ spec:
             kind: Secret
             name: {{ .Values.tls.commonSecretName | default "common-tls" | quote }}
             namespace: {{ .Release.Namespace | quote }}
+          {{- if .Values.tls.coderSecretName }}
+          - group: ""
+            kind: Secret
+            name: {{ .Values.tls.coderSecretName | quote }}
+            namespace: {{ .Release.Namespace | quote }}
+          {{- end }}

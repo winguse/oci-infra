@@ -3,26 +3,27 @@
 {{- $svcPortDashboard := .Values.service.dashboardPort | default 3000 -}}
 {{- $svcPortApi := .Values.service.apiPort | default 8000 -}}
 {{- $svcPortCodeServer := .Values.service.codeServerPort | default 8080 -}}
+{{- range .Values.ingress.hosts -}}
+{{- $host := .host -}}
+{{- $paths := .paths -}}
+{{- $isCodeServer := false -}}
+{{- range $paths }}{{ if eq .portType "code-server" }}{{ $isCodeServer = true }}{{ end }}{{ end -}}
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: {{ $fullName }}
-  namespace: {{ .Release.Namespace }}
+  name: {{ $fullName }}{{ if $isCodeServer }}-codeserver{{ else }}-dashboard{{ end }}
+  namespace: {{ $.Release.Namespace }}
   labels:
-    {{- include "hermes-agent.labels" . | nindent 4 }}
+    {{- include "hermes-agent.labels" $ | nindent 4 }}
 spec:
   parentRefs:
     - name: envoy
       namespace: gw
-  {{- if .Values.ingress.hosts }}
+      sectionName: {{ if $isCodeServer }}https-mtls-hmc{{ else }}https-mtls-hm{{ end }}
   hostnames:
-    {{- range .Values.ingress.hosts }}
-    - {{ .host | quote }}
-    {{- end }}
-  {{- end }}
+    - {{ $host | quote }}
   rules:
-    {{- range .Values.ingress.hosts }}
-    {{- range .paths }}
+    {{- range $paths }}
     - matches:
         - path:
             type: PathPrefix
@@ -31,5 +32,6 @@ spec:
         - name: {{ $fullName }}
           port: {{ if eq .portType "api" }}{{ $svcPortApi }}{{ else if eq .portType "code-server" }}{{ $svcPortCodeServer }}{{ else }}{{ $svcPortDashboard }}{{ end }}
     {{- end }}
-    {{- end }}
-{{- end }}
+---
+{{- end -}}
+{{- end -}}

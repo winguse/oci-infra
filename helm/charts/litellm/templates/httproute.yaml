@@ -12,6 +12,7 @@ spec:
   parentRefs:
     - name: envoy
       namespace: gw
+      sectionName: https
   {{- if .Values.ingress.hosts }}
   hostnames:
     {{- range .Values.ingress.hosts }}

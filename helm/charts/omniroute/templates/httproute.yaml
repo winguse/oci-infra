@@ -11,6 +11,7 @@ spec:
   parentRefs:
     - name: envoy
       namespace: gw
+      sectionName: https-mtls-omni
   hostnames:
     - {{ .Values.ingress.dashboardHost | quote }}
   rules:
@@ -29,6 +30,7 @@ spec:
   parentRefs:
     - name: envoy
       namespace: gw
+      sectionName: https
   hostnames:
     - {{ .Values.ingress.apiHost | quote }}
   rules:

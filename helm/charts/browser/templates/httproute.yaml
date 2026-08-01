@@ -11,6 +11,7 @@ spec:
   parentRefs:
     - name: envoy
       namespace: gw
+      sectionName: https
   hostnames:
     - {{ .Values.ingress.domain | quote }}
   rules:
