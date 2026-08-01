@@ -4,6 +4,7 @@ metadata:
   name: envoy-config
   namespace: {{ .Release.Namespace }}
 spec:
+  ipFamily: DualStack
   provider:
     type: Kubernetes
     kubernetes:
@@ -14,7 +15,6 @@ spec:
           oci.oraclecloud.com/load-balancer-type: "nlb"
           oci-network-load-balancer.oraclecloud.com/is-private: "false"
           oci-network-load-balancer.oraclecloud.com/is-preserve-source: "true"
-          oci-network-load-balancer.oraclecloud.com/ipv6-address-type: "ORACLE_ALLOCATED"
         patch:
           type: StrategicMerge
           value:
