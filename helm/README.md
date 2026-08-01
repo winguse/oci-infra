@@ -25,7 +25,7 @@ helm/
 
 Our [helmfile.yaml](file:///Users/yingyu/workspace/infra/helm/helmfile.yaml) orchestrates the lifecycle of the following releases:
 
-1. **`traefik`** (`traefik/traefik`): Configures the default ingress controller.
+1. **`envoy`** (`envoy/gateway-helm-charts`): Configures the default ingress gateway controller.
 2. **`cert-manager`** (`jetstack/cert-manager`): Manages SSL/TLS certificates with Let's Encrypt.
 3. **`postgresql`** (`bitnami/postgresql`): High-performance PostgreSQL datastore used by Coder.
 4. **`platform`** ([./charts/platform](file:///Users/yingyu/workspace/infra/helm/charts/platform)): Custom configurations containing our ClusterIssuer, Postgres secrets, OIDC configurations, and wildcards.

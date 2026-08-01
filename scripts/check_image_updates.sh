@@ -98,7 +98,6 @@ process_image() {
   local filter_pattern="$5" # regex for tag filtering
   local chart_yaml_path="$6"
   local values_path="$7"
-  local default_gotmpl_var="${8:-}" # env var in default.yaml.gotmpl or empty
 
   if [ "$TARGET_CHART" != "all" ] && [ "$TARGET_CHART" != "$chart_name" ]; then
     return 0
@@ -170,11 +169,6 @@ process_image() {
       if [ -n "$values_path" ] && [ -f "$values_path" ]; then
         replace_in_file "$values_path" "${current_tag}" "${latest_tag}"
       fi
-
-      # Update default.yaml.gotmpl if specified
-      if [ -n "$default_gotmpl_var" ] && [ -f "helm/environments/default.yaml.gotmpl" ]; then
-        replace_in_file "helm/environments/default.yaml.gotmpl" "default \"${current_tag}\"" "default \"${latest_tag}\""
-      fi
     else
       echo -e "${YELLOW}➜ UPDATE AVAILABLE (${current_tag} -> ${latest_tag})${NC}"
     fi
@@ -183,20 +177,20 @@ process_image() {
 
 echo -e "${CYAN}--- Processing Chart Image Configurations ---${NC}"
 
-process_image "bifrost"        "dockerhub" "maximhq/bifrost"                 "tag"        "semver"  "helm/charts/bifrost/Chart.yaml"        "helm/charts/bifrost/values.yaml"        ""
-process_image "browser"        "ghcr"      "winguse/browser"                "tag"        "default" "helm/charts/browser/Chart.yaml"        "helm/charts/browser/values.yaml"        "BROWSER_TAG"
-process_image "fas"            "ghcr"      "winguse/fas"                    "tag"        "semver"  "helm/charts/fas/Chart.yaml"            "helm/charts/fas/values.yaml"            "FAS_TAG"
-process_image "hermes-agent"  "dockerhub" "nousresearch/hermes-agent"        "tag"        "default" "helm/charts/hermes-agent/Chart.yaml"   "helm/charts/hermes-agent/values.yaml"   ""
-process_image "hermes-agent"  "ghcr"      "coder/code-server"              "codeServer" "semver"  ""                                      "helm/charts/hermes-agent/values.yaml"   ""
-process_image "litellm"        "ghcr"      "berriai/litellm-database"       "tag"        "semver"  "helm/charts/litellm/Chart.yaml"        "helm/charts/litellm/values.yaml"        ""
-process_image "micro-nfs"      "k8s"       "sig-storage/nfs-provisioner"   "tag"        "semver"  "helm/charts/micro-nfs/Chart.yaml"      "helm/charts/micro-nfs/values.yaml"      ""
-process_image "omniroute"      "dockerhub" "diegosouzapw/omniroute"         "tag"        "semver"  "helm/charts/omniroute/Chart.yaml"      "helm/charts/omniroute/values.yaml"      "OMNIROUTE_TAG"
-process_image "openclaw"       "dockerhub" "openclaw/openclaw"              "tag"        "default" "helm/charts/openclaw/Chart.yaml"       "helm/charts/openclaw/values.yaml"       ""
-process_image "platform"       "dockerhub" "cloudflare/cloudflared"         "cloudflared" "semver"  ""                                      "helm/charts/platform/templates/cloudflared.yaml" ""
-process_image "presidio"       "mcr"       "presidio-analyzer"              "analyzer"   "semver"  "helm/charts/presidio/Chart.yaml"       "helm/charts/presidio/values.yaml"       "PRESIDIO_ANALYZER_TAG"
-process_image "presidio"       "mcr"       "presidio-anonymizer"            "anonymizer" "semver"  ""                                      "helm/charts/presidio/values.yaml"       ""
-process_image "system-patches" "dockerhub" "bitnami/kubectl"                "kubectl"    "latest"  ""                                      "helm/charts/system-patches/templates/job.yaml" ""
-process_image "valkey"         "dockerhub" "valkey/valkey"                  "tag"        "alpine"  "helm/charts/valkey/Chart.yaml"         "helm/charts/valkey/values.yaml"         "VALKEY_TAG"
+process_image "bifrost"        "dockerhub" "maximhq/bifrost"                 "tag"        "semver"  "helm/charts/bifrost/Chart.yaml"        "helm/charts/bifrost/values.yaml"
+process_image "browser"        "ghcr"      "winguse/browser"                "tag"        "default" "helm/charts/browser/Chart.yaml"        "helm/charts/browser/values.yaml"
+process_image "fas"            "ghcr"      "winguse/fas"                    "tag"        "semver"  "helm/charts/fas/Chart.yaml"            "helm/charts/fas/values.yaml"
+process_image "hermes-agent"  "dockerhub" "nousresearch/hermes-agent"        "tag"        "default" "helm/charts/hermes-agent/Chart.yaml"   "helm/charts/hermes-agent/values.yaml"
+process_image "hermes-agent"  "ghcr"      "coder/code-server"              "codeServer" "semver"  ""                                      "helm/charts/hermes-agent/values.yaml"
+process_image "litellm"        "ghcr"      "berriai/litellm-database"       "tag"        "semver"  "helm/charts/litellm/Chart.yaml"        "helm/charts/litellm/values.yaml"
+process_image "micro-nfs"      "k8s"       "sig-storage/nfs-provisioner"   "tag"        "semver"  "helm/charts/micro-nfs/Chart.yaml"      "helm/charts/micro-nfs/values.yaml"
+process_image "omniroute"      "dockerhub" "diegosouzapw/omniroute"         "tag"        "semver"  "helm/charts/omniroute/Chart.yaml"      "helm/charts/omniroute/values.yaml"
+process_image "openclaw"       "dockerhub" "openclaw/openclaw"              "tag"        "default" "helm/charts/openclaw/Chart.yaml"       "helm/charts/openclaw/values.yaml"
+process_image "platform"       "dockerhub" "cloudflare/cloudflared"         "cloudflared" "semver"  ""                                      "helm/charts/platform/templates/cloudflared.yaml"
+process_image "presidio"       "mcr"       "presidio-analyzer"              "analyzer"   "semver"  "helm/charts/presidio/Chart.yaml"       "helm/charts/presidio/values.yaml"
+process_image "presidio"       "mcr"       "presidio-anonymizer"            "anonymizer" "semver"  ""                                      "helm/charts/presidio/values.yaml"
+process_image "system-patches" "dockerhub" "bitnami/kubectl"                "kubectl"    "latest"  ""                                      "helm/charts/system-patches/templates/job.yaml"
+process_image "valkey"         "dockerhub" "valkey/valkey"                  "tag"        "alpine"  "helm/charts/valkey/Chart.yaml"         "helm/charts/valkey/values.yaml"
 
 if [ "$MODE" = "update" ]; then
   echo -e "\n${CYAN}--- Linting Modified Charts ---${NC}"

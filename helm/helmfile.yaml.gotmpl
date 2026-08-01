@@ -1,7 +1,7 @@
 helmDefaults:
   wait: true
   timeout: 900
-  atomic: true
+  cleanupOnFail: true
 
 repositories:
   - name: jetstack
@@ -10,8 +10,6 @@ repositories:
     url: https://charts.bitnami.com/bitnami
   - name: coder-v2
     url: https://helm.coder.com/v2
-  - name: traefik
-    url: https://traefik.github.io/charts
   - name: autoscaler
     url: https://kubernetes.github.io/autoscaler
   - name: metrics-server
@@ -40,12 +38,21 @@ releases:
     values:
       - values/cluster-autoscaler.yaml.gotmpl
 
-  - name: traefik
+  - name: envoy
     namespace: kube-system
-    chart: traefik/traefik
-    version: 41.0.2
+    chart: oci://docker.io/envoyproxy/gateway-helm
+    version: v1.8.3
     values:
-      - values/traefik.yaml
+      - values/envoy.yaml
+
+  - name: gw
+    namespace: gw
+    createNamespace: true
+    chart: ./charts/gw
+    values:
+      - values/gw.yaml.gotmpl
+    needs:
+      - kube-system/envoy
 
 
   - name: cert-manager
@@ -176,7 +183,3 @@ releases:
   - name: system-patches
     namespace: kube-system
     chart: ./charts/system-patches
-
-
-
-

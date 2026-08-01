@@ -3,7 +3,7 @@ replicaCount: 1
 image:
   registry: docker.io
   repository: diegosouzapw/omniroute
-  tag: "3.8.48-web"
+  tag: "3.8.49-web"
   pullPolicy: IfNotPresent
 
 service:
@@ -14,9 +14,9 @@ service:
 
 ingress:
   enabled: false
-  className: "traefik"
-  dashboardHost: omni.o.wingu.se
-  apiHost: omni-api.o.wingu.se
+  className: "envoy"
+  dashboardHost: omni.i.wingu.se
+  apiHost: omni-api.i.wingu.se
   dashboardAnnotations: {}
   apiAnnotations: {}
 
@@ -45,7 +45,7 @@ env:
   HOSTNAME: "0.0.0.0"
   DATA_DIR: "/app/data"
   REDIS_URL: "redis://valkey.valkey.svc.cluster.local:6379"
-  LIVE_WS_ALLOWED_ORIGINS: "https://omni.o.wingu.se"
+  LIVE_WS_ALLOWED_ORIGINS: "https://omni.i.wingu.se"
   REQUIRE_API_KEY: "true"
 
 
@@ -66,7 +66,6 @@ affinity: {}
 networkPolicy:
   enabled: true
   ingressLabels:
-    app.kubernetes.io/name: traefik
+    app.kubernetes.io/name: envoy
   ingressNamespaceLabels:
     kubernetes.io/metadata.name: kube-system
-

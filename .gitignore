@@ -1,5 +1,7 @@
 # Secrets and credentials
 .env
+.env.*
+!.env.example
 
 # TLS / PKI
 *.pem

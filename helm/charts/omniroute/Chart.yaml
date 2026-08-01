@@ -3,4 +3,4 @@ name: omniroute
 description: A local Helm chart for deploying OmniRoute AI Gateway
 type: application
 version: 0.1.0
-appVersion: "3.8.48-web"
+appVersion: "3.8.49-web"

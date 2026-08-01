@@ -1,12 +1,8 @@
 replicaCount: {{ .Values.omniroute.replicaCount }}
-image:
-  registry: {{ .Values.omniroute.image.registry | quote }}
-  repository: {{ .Values.omniroute.image.repository | quote }}
-  tag: {{ .Values.omniroute.image.tag | quote }}
 
 ingress:
   enabled: true
-  className: "traefik"
+  className: "envoy"
   dashboardHost: {{ .Values.omniroute.domain | quote }}
   apiHost: {{ .Values.omniroute.apiDomain | quote }}
   dashboardAnnotations: {}
@@ -14,6 +10,7 @@ ingress:
 
 tls:
   commonSecretName: {{ .Values.tls.commonSecretName | quote }}
+  commonWildcardDomain: {{ .Values.tls.commonWildcardDomain | quote }}
 
 mtls:
   enabled: {{ .Values.omniroute.mtlsEnabled }}

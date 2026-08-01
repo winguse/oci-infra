@@ -32,7 +32,7 @@ graph TD
 
 1. **Provision Infrastructure**: Use [Pulumi](file:///Users/yingyu/workspace/infra/pulumi) to set up the Oracle Cloud Infrastructure (VCN, subnets, and VM instances for the `k3s` cluster).
 2. **Retrieve Kubeconfig**: Connect to the provisioned instances and download/configure your `kubeconfig` target.
-3. **Deploy Applications**: Use [Helmfile](file:///Users/yingyu/workspace/infra/helm) via the root `Makefile` to install and sync cert-manager, PostgreSQL, Traefik, and Coder.
+3. **Deploy Applications**: Use [Helmfile](file:///Users/yingyu/workspace/infra/helm) via the root `Makefile` to install and sync cert-manager, PostgreSQL, Envoy, and Coder.
 
 ---
 

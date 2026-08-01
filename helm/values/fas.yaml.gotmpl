@@ -1,23 +1,18 @@
 replicaCount: {{ .Values.fas.replicaCount }}
 
-image:
-  registry: {{ .Values.fas.image.registry | quote }}
-  repository: {{ .Values.fas.image.repository | quote }}
-  tag: {{ .Values.fas.image.tag | quote }}
-  pullPolicy: IfNotPresent
-
 service:
   type: ClusterIP
   port: 8080
 
 ingress:
   enabled: true
-  className: {{ dig "ingress" "className" "traefik" .Values | quote }}
+  className: {{ dig "ingress" "className" "envoy" .Values | quote }}
   domain: {{ .Values.fas.domain | quote }}
   annotations: {}
 
 tls:
   commonSecretName: {{ .Values.tls.commonSecretName | quote }}
+  commonWildcardDomain: {{ .Values.tls.commonWildcardDomain | quote }}
 
 mtls:
   enabled: {{ .Values.fas.mtls.enabled }}
@@ -46,6 +41,6 @@ resources:
 networkPolicy:
   enabled: {{ .Values.fas.networkPolicy.enabled }}
   ingressLabels:
-    app.kubernetes.io/name: traefik
+    app.kubernetes.io/name: envoy
   ingressNamespaceLabels:
     kubernetes.io/metadata.name: kube-system

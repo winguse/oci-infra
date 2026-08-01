@@ -14,7 +14,7 @@ spec:
     - Ingress
     - Egress
   ingress:
-    # Allow ingress ONLY from Traefik ingress proxy
+    # Allow ingress ONLY from Envoy ingress proxy
     - from:
         - namespaceSelector:
             matchLabels:

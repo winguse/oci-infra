@@ -1,13 +1,20 @@
-apiVersion: traefik.io/v1alpha1
-kind: Middleware
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
 metadata:
   name: {{ include "fas.fullname" . }}-auth
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "fas.labels" . | nindent 4 }}
 spec:
-  forwardAuth:
-    address: {{ printf "http://%s.%s.svc.cluster.local:%d/_auth" (include "fas.fullname" .) .Release.Namespace (int .Values.service.port) }}
-    trustForwardHeader: true
-    authResponseHeaders:
-      - "Set-Cookie"
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: {{ .Values.gatewayName | default "envoy" }}
+  extAuth:
+    http:
+      path: /_auth
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: {{ include "fas.fullname" . }}
+          port: {{ int .Values.service.port }}

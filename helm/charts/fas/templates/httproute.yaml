@@ -1,0 +1,28 @@
+{{- if .Values.ingress.enabled -}}
+{{- $fullName := include "fas.fullname" . -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ $fullName }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "fas.labels" . | nindent 4 }}
+spec:
+  parentRefs:
+    - name: envoy
+      namespace: gw
+  hostnames:
+    - {{ .Values.ingress.domain | quote }}
+  rules:
+    - {{- if .Values.sharedSecret }}
+      filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: X-Shared-Secret
+                value: {{ .Values.sharedSecret | quote }}
+      {{- end }}
+      backendRefs:
+        - name: {{ $fullName }}
+          port: {{ .Values.service.port | default 8080 }}
+{{- end }}

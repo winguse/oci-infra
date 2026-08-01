@@ -8,7 +8,7 @@ image:
   repository: docker.io/nousresearch/hermes-agent
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v2026.7.20"
+  tag: "v2026.7.30"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -53,7 +53,7 @@ ingress:
   enabled: false
   className: ""
   annotations: {}
-    # kubernetes.io/ingress.class: traefik
+    # kubernetes.io/ingress.class: envoy
     # cert-manager.io/cluster-issuer: letsencrypt-prod
   # Host configurations for Ingress.
   # Supports separate hosts for Dashboard and API server if needed,
@@ -148,6 +148,6 @@ codeServer:
 networkPolicy:
   enabled: false
   ingressLabels:
-    app.kubernetes.io/name: traefik
+    app.kubernetes.io/name: envoy
   ingressNamespaceLabels:
     kubernetes.io/metadata.name: kube-system

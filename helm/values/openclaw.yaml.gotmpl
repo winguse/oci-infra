@@ -1,6 +1,6 @@
 ingress:
   enabled: true
-  className: {{ dig "ingress" "className" "traefik" .Values | quote }}
+  className: {{ dig "ingress" "className" "envoy" .Values | quote }}
   annotations: {}
   hosts:
     - host: {{ .Values.openclaw.domain | quote }}

@@ -1,28 +1,24 @@
 replicaCount: {{ .Values.browser.replicaCount }}
 
-image:
-  registry: {{ .Values.browser.image.registry | quote }}
-  repository: {{ .Values.browser.image.repository | quote }}
-  tag: {{ .Values.browser.image.tag | quote }}
-  pullPolicy: IfNotPresent
-
 service:
   type: ClusterIP
   port: 8080
 
 ingress:
   enabled: true
-  className: {{ dig "ingress" "className" "traefik" .Values | quote }}
+  className: {{ dig "ingress" "className" "envoy" .Values | quote }}
   domain: {{ .Values.browser.domain | quote }}
   annotations: {}
 
 tls:
   commonSecretName: {{ .Values.tls.commonSecretName | quote }}
+  commonWildcardDomain: {{ .Values.tls.commonWildcardDomain | quote }}
 
 fas:
   enabled: true
   namespace: {{ .Values.browser.fas.namespace | quote }}
   middlewareName: {{ .Values.browser.fas.middlewareName | quote }}
+  sharedSecret: {{ env "FAS_SHARED_SECRET" | default "" | quote }}
 
 resources:
   limits:
@@ -36,7 +32,7 @@ networkPolicy:
   ingressNamespaceLabels:
     kubernetes.io/metadata.name: {{ dig "ingress" "namespace" "kube-system" .Values | quote }}
   ingressLabels:
-    app.kubernetes.io/name: "traefik"
+    app.kubernetes.io/name: "envoy"
   dnsNamespaceLabels:
     kubernetes.io/metadata.name: "kube-system"
   privateCidrsExcept:
@@ -45,4 +41,3 @@ networkPolicy:
     - "192.168.0.0/16"
     - "100.64.0.0/10"
     - "169.254.0.0/16"
-

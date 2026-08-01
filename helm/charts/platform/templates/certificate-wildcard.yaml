@@ -1,16 +1,4 @@
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: {{ .Values.tls.commonSecretName }}
-  namespace: {{ .Release.Namespace }}
-spec:
-  secretName: {{ .Values.tls.commonSecretName }}
-  issuerRef:
-    name: letsencrypt-prod
-    kind: ClusterIssuer
-  dnsNames:
-    - {{ .Values.tls.commonWildcardDomain | quote }}
----
+{{- if and .Values.tls .Values.tls.coderWildcardDomain -}}
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
@@ -23,3 +11,4 @@ spec:
     kind: ClusterIssuer
   dnsNames:
     - {{ .Values.tls.coderWildcardDomain | quote }}
+{{- end }}

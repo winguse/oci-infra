@@ -18,20 +18,24 @@ def main():
     repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     os.chdir(repo_root)
 
-    env_file = ".env"
+    env_file = os.environ.get("ENV_FILE", ".env")
     if not os.path.exists(env_file):
-        print(f"Error: {env_file} not found.", file=sys.stderr)
-        sys.exit(1)
+        if os.path.exists(".env"):
+            env_file = ".env"
+        else:
+            print(f"Warning: Neither {env_file} nor .env found. Proceeding with system environment variables.", file=sys.stderr)
+            env_file = None
 
-    # 1. Parse .env into os.environ
-    with open(env_file) as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
-            if "=" in line:
-                k, v = line.split("=", 1)
-                os.environ[k.strip()] = v.strip().strip("'\"")
+    # 1. Parse env file into os.environ if present
+    if env_file:
+        with open(env_file) as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                if "=" in line:
+                    k, v = line.split("=", 1)
+                    os.environ[k.strip()] = v.strip().strip("'\"")
 
     # 2. Read environments/default.yaml.gotmpl
     with open("helm/environments/default.yaml.gotmpl") as f:

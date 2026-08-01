@@ -3,7 +3,7 @@ replicaCount: 1
 image:
   registry: ghcr.io
   repository: winguse/browser
-  tag: "v0.0.1"
+  tag: "v0.0.2"
   pullPolicy: IfNotPresent
 
 service:
@@ -12,8 +12,8 @@ service:
 
 ingress:
   enabled: true
-  className: "traefik"
-  domain: s.o.wingu.se
+  className: "envoy"
+  domain: s.i.wingu.se
   annotations: {}
 
 tls:
@@ -36,7 +36,7 @@ networkPolicy:
   ingressNamespaceLabels:
     kubernetes.io/metadata.name: kube-system
   ingressLabels:
-    app.kubernetes.io/name: traefik
+    app.kubernetes.io/name: envoy
   dnsNamespaceLabels:
     kubernetes.io/metadata.name: kube-system
   privateCidrsExcept:
@@ -45,4 +45,3 @@ networkPolicy:
     - 192.168.0.0/16
     - 100.64.0.0/10
     - 169.254.0.0/16
-

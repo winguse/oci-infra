@@ -19,7 +19,7 @@ spec:
           port: {{ .Values.service.apiPort }}
         - protocol: TCP
           port: {{ .Values.service.liveWsPort }}
-    # Allow dashboard port ONLY from Traefik
+    # Allow dashboard port ONLY from Envoy
     - from:
         - namespaceSelector:
             matchLabels:

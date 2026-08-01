@@ -1,0 +1,38 @@
+{{- if .Values.fas.enabled -}}
+{{- $fullName := include "browser.fullname" . -}}
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: {{ $fullName }}-fas
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "browser.labels" . | nindent 4 }}
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: {{ $fullName }}
+  extAuth:
+    headersToExtAuth:
+      - Host
+      - User-Agent
+      - Accept-Language
+      - Cookie
+      - Authorization
+      - X-Forwarded-Proto
+      - X-Forwarded-Host
+      - X-Forwarded-Uri
+      - X-Forwarded-Method
+      - X-Original-Method
+      - X-Original-URI
+    http:
+      pathOverride: /_auth
+      headersToBackend:
+        - Set-Cookie
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: fas
+          namespace: {{ .Values.fas.namespace | default "fas" }}
+          port: 8080
+{{- end }}

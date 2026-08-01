@@ -19,7 +19,7 @@ spec:
           port: {{ .Values.service.apiPort }}
         - protocol: TCP
           port: {{ .Values.service.dashboardPort }}
-    # Allow code-server port ONLY from Traefik
+    # Allow code-server port ONLY from Envoy
     {{- if .Values.codeServer.enabled }}
     - from:
         - namespaceSelector:

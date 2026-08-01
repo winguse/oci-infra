@@ -3,7 +3,7 @@ replicaCount: 1
 image:
   registry: ghcr.io
   repository: winguse/fas
-  tag: "0.0.3"
+  tag: "0.1.0"
   pullPolicy: IfNotPresent
 
 service:
@@ -12,8 +12,8 @@ service:
 
 ingress:
   enabled: true
-  className: "traefik"
-  domain: a.o.wingu.se
+  className: "envoy"
+  domain: a.i.wingu.se
   annotations: {}
 
 tls:
@@ -34,8 +34,8 @@ env:
   FAS_DATA_FILE: "/data/fas.jsonl"
   FAS_ACL_FILE: "/data/acl.yaml"
 
-# When set, creates a Kubernetes Secret and a Traefik Headers middleware that
-# injects the X-Shared-Secret header into every request Traefik forwards to FAS.
+# When set, creates a Kubernetes Secret and header injection configuration that
+# injects the X-Shared-Secret header into every request Envoy forwards to FAS.
 # FAS_SHARED_SECRET is also exposed to the FAS container for request validation.
 sharedSecret: ""
 
@@ -49,6 +49,6 @@ resources:
 networkPolicy:
   enabled: true
   ingressLabels:
-    app.kubernetes.io/name: traefik
+    app.kubernetes.io/name: envoy
   ingressNamespaceLabels:
     kubernetes.io/metadata.name: kube-system

@@ -11,13 +11,13 @@ service:
 
 ingress:
   enabled: true
-  className: traefik
+  className: envoy
   hosts: []
   tls: []
 
 publicIngress:
   enabled: false
-  className: traefik
+  className: envoy
   hosts: []
   tls: []
 

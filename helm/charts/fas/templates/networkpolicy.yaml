@@ -13,7 +13,7 @@ spec:
   policyTypes:
     - Ingress
   ingress:
-    # Allow ingress ONLY from Traefik
+    # Allow ingress ONLY from Envoy
     - from:
         - namespaceSelector:
             matchLabels:

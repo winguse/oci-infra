@@ -1,5 +1,5 @@
 ingress:
-  className: traefik
+  className: envoy
 
 cloudflare:
   tunnelToken: ""

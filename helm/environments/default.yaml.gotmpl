@@ -1,51 +1,52 @@
-coderDomain: {{ env "CODER_DOMAIN" | default "coder.example.com" }}
+coderDomain: coder.i.wingu.se
 tls:
-  commonWildcardDomain: {{ env "COMMON_TLS_WILDCARD_DOMAIN" | default "*.level2.example.com" | quote }}
+  commonWildcardDomain: "*.i.wingu.se"
   commonSecretName: common-tls
-  coderWildcardDomain: {{ env "CODER_TLS_WILDCARD_DOMAIN" | default "*.coder.level2.example.com" | quote }}
+  coderWildcardDomain: "*.coder.i.wingu.se"
   coderSecretName: coder-tls
-acmeEmail: {{ env "ACME_EMAIL" | default "admin@example.com" | quote }}
+acmeEmail: "certs@winguse.com"
 acmeServer: https://acme-v02.api.letsencrypt.org/directory
+clusterAutoscaler:
+  nodePoolId: "ocid1.nodepool.oc1.us-sanjose-1.aaaaaaaa4vig3xtblub4u2d4efnexwtcyruuizx2di4k5b2srnmcapzfm6ea"
 
 postgresql:
-  namespace: {{ env "POSTGRES_NAMESPACE" | default "postgres" | quote }}
+  namespace: "postgres"
   auth:
-    username: {{ env "POSTGRES_USER" | default "coder" | quote }}
+    username: "coder"
     password: {{ env "POSTGRES_PASSWORD" | default "coder" | quote }}
-    database: {{ env "POSTGRES_DATABASE" | default "coder" | quote }}
+    database: "coder"
   extraDatabases:
     - name: "litellm"
-      username: {{ env "LITELLM_DB_USER" | default "litellm" | quote }}
+      username: "litellm"
       password: {{ env "LITELLM_DB_PASSWORD" | default "litellm-pass" | quote }}
 
 acmeDNS:
-  host: {{ env "ACME_DNS_HOST" | default "https://auth.example.com" | quote }}
+  host: "https://challenge.winguse.workers.dev"
   secretName: acme-dns
   secretKey: acmedns.json
 
 coder:
   oidc:
-    issuerUrl: {{ env "CODER_OIDC_ISSUER_URL" | default "" | quote }}
-    clientId: {{ env "CODER_OIDC_CLIENT_ID" | default "" | quote }}
+    issuerUrl: "https://auth.wingu.se"
+    clientId: "oc-coder"
     clientSecret: {{ env "CODER_OIDC_CLIENT_SECRET" | default "" | quote }}
-    emailDomain: {{ env "CODER_OIDC_EMAIL_DOMAIN" | default "" | quote }}
-    ignoreEmailVerified: {{ eq (env "CODER_OIDC_IGNORE_EMAIL_VERIFIED" | default "false") "true" }}
-    disablePasswordAuth: {{ eq (env "CODER_DISABLE_PASSWORD_AUTH" | default "false") "true" }}
+    emailDomain: "me.com"
+    ignoreEmailVerified: false
+    disablePasswordAuth: false
   telemetry:
-    enable: {{ eq (env "CODER_TELEMETRY_ENABLE" | default "false") "true" }}
+    enable: false
 
 cloudflare:
   tunnelToken: {{ env "CLOUDFLARE_TUNNEL_TOKEN" | default "" | quote }}
-  coderDomain: {{ env "CLOUDFLARE_CODER_DOMAIN" | default "" | quote }}
-  coderWildcardDomain: {{ env "CLOUDFLARE_CODER_TLS_WILDCARD_DOMAIN" | default "" | quote }}
+  coderDomain: "coder.wingu.se"
+  coderWildcardDomain: "*.coder.wingu.se"
 
 microNfs:
   backingStorage:
-    size: {{ env "MICRO_NFS_BACKING_SIZE" | default "100Gi" | quote }}
-    storageClassName: {{ env "MICRO_NFS_STORAGE_CLASS" | default "oci-bv" | quote }}
-    {{- if env "MICRO_NFS_VOLUME_NAME" }}
-    volumeName: {{ env "MICRO_NFS_VOLUME_NAME" | quote }}
-    volumeHandle: {{ env "MICRO_NFS_VOLUME_HANDLE" | quote }}
+    size: "100Gi"
+    storageClassName: "oci-bv"
+    volumeName: "micro-nfs-backing"
+    volumeHandle: "ocid1.volume.oc1.us-sanjose-1.abzwuljrio4pqs65jiqlyckxt5ja4lhhfaecwiukbdmfuuinrgw567er753q"
     nodeAffinity:
       required:
         nodeSelectorTerms:
@@ -53,128 +54,101 @@ microNfs:
               - key: topology.kubernetes.io/zone
                 operator: In
                 values:
-                  - {{ env "MICRO_NFS_VOLUME_AD" | default "pMBo:US-SANJOSE-1-AD-1" | splitList ":" | last | quote }}
-    {{- end }}
+                  - "US-SANJOSE-1-AD-1"
   storageClass:
-    name: {{ env "MICRO_NFS_CLASS_NAME" | default "micro-nfs" | quote }}
-    isDefault: {{ eq (env "MICRO_NFS_IS_DEFAULT" | default "true") "true" }}
+    name: "micro-nfs"
+    isDefault: true
   resources:
     limits:
-      memory: {{ env "MICRO_NFS_MEMORY_LIMIT" | default "256Mi" | quote }}
+      memory: "521Mi"
     requests:
-      cpu: {{ env "MICRO_NFS_CPU" | default "50m" | quote }}
-      memory: {{ env "MICRO_NFS_MEMORY_REQUEST" | default "256Mi" | quote }}
+      cpu: "50m"
+      memory: "256Mi"
 
 hermes:
-  domain: {{ env "HERMES_DOMAIN" | default "hermes.level2.example.com" | quote }}
-  codeServerDomain: {{ env "HERMES_CODESERVER_DOMAIN" | default "hmc.o.wingu.se" | quote }}
+  domain: "hm.i.wingu.se"
+  codeServerDomain: "hmc.i.wingu.se"
   mtls:
-    enabled: {{ eq (env "HERMES_MTLS_ENABLED" | default "true") "true" }}
+    enabled: true
   dashboard:
-    enabled: {{ eq (env "HERMES_DASHBOARD_ENABLED" | default "true") "true" }}
-    publicUrl: {{ env "HERMES_DASHBOARD_PUBLIC_URL" | default (printf "https://%s" (env "HERMES_DOMAIN" | default "hermes.level2.example.com")) | quote }}
+    enabled: true
+    publicUrl: "https://hm.i.wingu.se"
     oidc:
-      issuer: {{ env "HERMES_DASHBOARD_OIDC_ISSUER" | default "" | quote }}
-      clientId: {{ env "HERMES_DASHBOARD_OIDC_CLIENT_ID" | default "" | quote }}
-      scopes: {{ env "HERMES_DASHBOARD_OIDC_SCOPES" | default "openid profile email" | quote }}
+      issuer: "https://auth.wingu.se"
+      clientId: "hermes-dashboard"
+      scopes: "openid profile email"
   apiServer:
-    enabled: {{ eq (env "HERMES_API_SERVER_ENABLED" | default "true") "true" }}
+    enabled: true
   codeServer:
-    enabled: {{ eq (env "HERMES_CODESERVER_ENABLED" | default "true") "true" }}
+    enabled: true
   networkPolicy:
-    enabled: {{ eq (env "HERMES_NETWORK_POLICY_ENABLED" | default "true") "true" }}
-
+    enabled: true
 
 openclaw:
-  domain: {{ env "OPENCLAW_DOMAIN" | default "oc.o.wingu.se" | quote }}
-  replicaCount: {{ env "OPENCLAW_REPLICAS" | default "0" | int }}
+  domain: "oc.i.wingu.se"
+  replicaCount: 0
   mtls:
-    enabled: {{ eq (env "OPENCLAW_MTLS_ENABLED" | default "true") "true" }}
+    enabled: true
 
 litellm:
-  domain: {{ env "LITELLM_DOMAIN" | default "llm.o.wingu.se" | quote }}
+  domain: "llm.i.wingu.se"
   masterKey: {{ env "LITELLM_MASTER_KEY" | default "sk-litellm-master-key-12345" | quote }}
-  replicaCount: {{ env "LITELLM_REPLICAS" | default "0" | int }}
+  replicaCount: 0
   database:
-    username: {{ env "LITELLM_DB_USER" | default "litellm" | quote }}
+    username: "litellm"
     password: {{ env "LITELLM_DB_PASSWORD" | default "litellm-pass" | quote }}
     name: "litellm"
   oidc:
-    enabled: {{ eq (env "LITELLM_OIDC_ENABLED" | default "false") "true" }}
-    clientId: {{ env "LITELLM_OIDC_CLIENT_ID" | default "" | quote }}
+    enabled: true
+    clientId: "litellm"
     clientSecret: {{ env "LITELLM_OIDC_CLIENT_SECRET" | default "" | quote }}
-    authEndpoint: {{ env "LITELLM_OIDC_AUTH_ENDPOINT" | default "" | quote }}
-    tokenEndpoint: {{ env "LITELLM_OIDC_TOKEN_ENDPOINT" | default "" | quote }}
-    userEndpoint: {{ env "LITELLM_OIDC_USER_ENDPOINT" | default "" | quote }}
+    authEndpoint: "https://auth.wingu.se/api/oidc/authorization"
+    tokenEndpoint: "https://auth.wingu.se/api/oidc/token"
+    userEndpoint: "https://auth.wingu.se/api/oidc/userinfo"
 
 bifrost:
-  domain: {{ env "BIFROST_DOMAIN" | default "bf.o.wingu.se" | quote }}
-  publicDomain: {{ env "BIFROST_PUBLIC_DOMAIN" | default "gwl.o.wingu.se" | quote }}
-  replicaCount: {{ env "BIFROST_REPLICAS" | default "0" | int }}
+  domain: "bf.i.wingu.se"
+  publicDomain: "gwl.i.wingu.se"
+  replicaCount: 0
   mtls:
-    enabled: {{ eq (env "BIFROST_MTLS_ENABLED" | default "true") "true" }}
+    enabled: true
 
 presidio:
-  namespace: {{ env "PRESIDIO_NAMESPACE" | default "presidio" | quote }}
-  presidioRegistry: {{ env "PRESIDIO_REGISTRY" | default "mcr.microsoft.com" | quote }}
+  namespace: "presidio"
   analyzer:
-    replicaCount: {{ env "PRESIDIO_ANALYZER_REPLICAS" | default "0" | int }}
-    image:
-      registry: "mcr.microsoft.com"
-      repository: "presidio-analyzer"
-      tag: "v0.3s"
+    replicaCount: 0
   anonymizer:
-    replicaCount: {{ env "PRESIDIO_ANONYMIZER_REPLICAS" | default "0" | int }}
-    image:
-      registry: "mcr.microsoft.com"
-      repository: "presidio-anonymizer"
-      tag: "v0.3s"
+    replicaCount: 0
 
 valkey:
-  namespace: {{ env "VALKEY_NAMESPACE" | default "valkey" | quote }}
-  replicaCount: {{ env "VALKEY_REPLICAS" | default "1" | int }}
-  image:
-    registry: {{ env "VALKEY_REGISTRY" | default "docker.io" | quote }}
-    repository: {{ env "VALKEY_REPOSITORY" | default "valkey/valkey" | quote }}
-    tag: {{ env "VALKEY_TAG" | default "9.1.1-alpine" | quote }}
+  namespace: "valkey"
+  replicaCount: 1
 
 omniroute:
-  namespace: {{ env "OMNIROUTE_NAMESPACE" | default "omniroute" | quote }}
-  domain: {{ env "OMNIROUTE_DOMAIN" | default "omni.o.wingu.se" | quote }}
-  apiDomain: {{ env "OMNIROUTE_API_DOMAIN" | default "omni-api.o.wingu.se" | quote }}
-  replicaCount: {{ env "OMNIROUTE_REPLICAS" | default "1" | int }}
-  mtlsEnabled: {{ eq (env "OMNIROUTE_MTLS_ENABLED" | default "true") "true" }}
+  namespace: "omniroute"
+  domain: "omni.i.wingu.se"
+  apiDomain: "omni-api.i.wingu.se"
+  replicaCount: 1
+  mtlsEnabled: true
   networkPolicy:
-    enabled: {{ eq (env "OMNIROUTE_NETWORK_POLICY_ENABLED" | default "true") "true" }}
+    enabled: true
   requireApiKey: "true"
-  image:
-    registry: {{ env "OMNIROUTE_REGISTRY" | default "docker.io" | quote }}
-    repository: {{ env "OMNIROUTE_REPOSITORY" | default "diegosouzapw/omniroute" | quote }}
-    tag: {{ env "OMNIROUTE_TAG" | default "3.8.48-web" | quote }}
 
 fas:
-  namespace: {{ env "FAS_NAMESPACE" | default "fas" | quote }}
-  domain: {{ env "FAS_DOMAIN" | default "a.o.wingu.se" | quote }}
-  replicaCount: {{ env "FAS_REPLICAS" | default "1" | int }}
+  namespace: "fas"
+  domain: "a.i.wingu.se"
+  replicaCount: 1
   mtls:
-    enabled: {{ eq (env "FAS_MTLS_ENABLED" | default "true") "true" }}
+    enabled: true
   networkPolicy:
-    enabled: {{ eq (env "FAS_NETWORK_POLICY_ENABLED" | default "true") "true" }}
-  image:
-    registry: {{ env "FAS_REGISTRY" | default "ghcr.io" | quote }}
-    repository: {{ env "FAS_REPOSITORY" | default "winguse/fas" | quote }}
-    tag: "0.0.3"
+    enabled: true
 
 browser:
-  namespace: {{ env "BROWSER_NAMESPACE" | default "browser" | quote }}
-  domain: {{ env "BROWSER_DOMAIN" | default "s.o.wingu.se" | quote }}
-  replicaCount: {{ env "BROWSER_REPLICAS" | default "1" | int }}
-  image:
-    registry: {{ env "BROWSER_REGISTRY" | default "ghcr.io" | quote }}
-    repository: {{ env "BROWSER_REPOSITORY" | default "winguse/browser" | quote }}
-    tag: "v0.0.1"
+  namespace: "browser"
+  domain: "s.i.wingu.se"
+  replicaCount: 1
   fas:
-    namespace: {{ env "FAS_NAMESPACE" | default "fas" | quote }}
-    middlewareName: {{ env "FAS_MIDDLEWARE_NAME" | default "fas-auth" | quote }}
+    namespace: "fas"
+    middlewareName: "fas-auth"
   networkPolicy:
-    enabled: {{ eq (env "BROWSER_NETWORK_POLICY_ENABLED" | default "true") "true" }}
+    enabled: true

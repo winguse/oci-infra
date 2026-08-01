@@ -1,17 +1,20 @@
 {{- if .Values.mtls.enabled -}}
-apiVersion: traefik.io/v1alpha1
-kind: TLSOption
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
 metadata:
   name: {{ include "bifrost.fullname" . }}-mtls
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "bifrost.labels" . | nindent 4 }}
 spec:
-  minVersion: VersionTLS12
-  clientAuth:
-    secretNames:
-      - {{ include "bifrost.fullname" . }}-mtls-ca
-    clientAuthType: RequireAndVerifyClientCert
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: {{ .Values.mtls.gatewayName | default "envoy" }}
+  tls:
+    clientValidation:
+      caCertificateRefs:
+        - name: {{ include "bifrost.fullname" . }}-mtls-ca
 ---
 apiVersion: v1
 kind: Secret

@@ -8,9 +8,9 @@ The Hermes Agent is deployed as a single-replica **StatefulSet** rather than a D
 
 ```mermaid
 graph TD
-    User([User / API Client]) -->|Ingress| Traefik[Traefik Ingress Controller]
-    Traefik -->|Service Port 9119| HermesSvc[Hermes Service]
-    Traefik -->|Service Port 8642| HermesSvc
+    User([User / API Client]) -->|Ingress| Envoy[Envoy Ingress Gateway]
+    Envoy -->|Service Port 9119| HermesSvc[Hermes Service]
+    Envoy -->|Service Port 8642| HermesSvc
     HermesSvc -->|Dashboard / API| Pod[Hermes Pod StatefulSet]
     
     subgraph Pod [Hermes Pod]
@@ -30,7 +30,7 @@ graph TD
 - **Persistent Volume Support**: Configurable persistent volume mounted at `/opt/data` to save all configurations, sessions, memories, skills, and logs.
 - **Decoupled Secrets (Makefile Integration)**: Sensitive keys (LLM API key, basic auth credentials, API token) are managed outside Helm, fetched from your local `.env`, and synchronized into the `hermes-agent-secrets` secret by the root `Makefile`.
 - **Configurable OpenAI-Compatible Endpoint**: Integrates a custom model endpoint using runtime-expanded environment variables (`${HERMES_MODEL_PROVIDER}`, `${HERMES_MODEL_NAME}`, `${HERMES_MODEL_BASE_URL}`).
-- **Dashboard & API Ingress**: Exposes ports `8642` and `9119` with a configurable Service and Ingress, fully integrated with Traefik and cert-manager (`letsencrypt-prod`).
+- **Dashboard & API Ingress**: Exposes ports `8642` and `9119` with a configurable Service and Ingress, fully integrated with Envoy and cert-manager (`letsencrypt-prod`).
 
 ---
 
