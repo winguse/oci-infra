@@ -9,30 +9,60 @@ spec:
     type: Kubernetes
     kubernetes:
       envoyService:
-        type: LoadBalancer
+        type: NodePort
         externalTrafficPolicy: Local
-        annotations:
-          oci.oraclecloud.com/load-balancer-type: "nlb"
-          oci-network-load-balancer.oraclecloud.com/is-private: "false"
-          oci-network-load-balancer.oraclecloud.com/is-preserve-source: "true"
         patch:
-          type: StrategicMerge
+          type: JSONMerge
           value:
             spec:
               ipFamilyPolicy: PreferDualStack
               ipFamilies:
                 - IPv4
                 - IPv6
-              healthCheckNodePort: 30122
               ports:
                 - name: http
                   port: 80
                   protocol: TCP
+                  targetPort: 10080
                   nodePort: 31080
-                - name: https-mtls-a
+                - name: https
                   port: 443
                   protocol: TCP
+                  targetPort: 10443
                   nodePort: 31332
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: envoy-quic-config
+  namespace: {{ .Release.Namespace }}
+spec:
+  ipFamily: DualStack
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyService:
+        type: NodePort
+        externalTrafficPolicy: Local
+        patch:
+          type: JSONMerge
+          value:
+            spec:
+              ipFamilyPolicy: PreferDualStack
+              ipFamilies:
+                - IPv4
+                - IPv6
+              ports:
+                - name: https-h3
+                  port: 443
+                  protocol: UDP
+                  targetPort: 10443
+                  nodePort: 31344
+                - name: health
+                  port: 19003
+                  protocol: TCP
+                  targetPort: 19003
+                  nodePort: 31345
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: GatewayClass
@@ -60,6 +90,25 @@ spec:
       allowedRoutes:
         namespaces:
           from: All
+    - name: https
+      protocol: HTTPS
+      port: 443
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - group: ""
+            kind: Secret
+            name: {{ .Values.tls.commonSecretName | default "common-tls" | quote }}
+            namespace: {{ .Release.Namespace | quote }}
+          {{- if .Values.tls.coderSecretName }}
+          - group: ""
+            kind: Secret
+            name: {{ .Values.tls.coderSecretName | quote }}
+            namespace: {{ .Release.Namespace | quote }}
+          {{- end }}
     - name: https-mtls-a
       protocol: HTTPS
       port: 443
@@ -160,6 +209,20 @@ spec:
             name: {{ .Values.tls.coderSecretName | quote }}
             namespace: {{ .Release.Namespace | quote }}
           {{- end }}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: envoy-quic
+  namespace: {{ .Release.Namespace }}
+spec:
+  gatewayClassName: envoy
+  infrastructure:
+    parametersRef:
+      group: gateway.envoyproxy.io
+      kind: EnvoyProxy
+      name: envoy-quic-config
+  listeners:
     - name: https
       protocol: HTTPS
       port: 443
@@ -183,12 +246,28 @@ spec:
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: ClientTrafficPolicy
 metadata:
-  name: envoy-https-http3
+  name: envoy-https-alpn
   namespace: {{ .Release.Namespace }}
 spec:
   targetRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
       name: envoy
+      sectionName: https
+  tls:
+    alpnProtocols:
+      - http/1.1
+      - h2
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  name: envoy-quic-https-http3
+  namespace: {{ .Release.Namespace }}
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: envoy-quic
       sectionName: https
   http3: {}

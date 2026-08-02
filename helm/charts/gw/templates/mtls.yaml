@@ -10,6 +10,9 @@ spec:
       name: envoy
       sectionName: https-mtls-a
   tls:
+    alpnProtocols:
+      - http/1.1
+      - h2
     clientValidation:
       caCertificateRefs:
         - name: mtls-ca-bundle
@@ -26,6 +29,9 @@ spec:
       name: envoy
       sectionName: https-mtls-hm
   tls:
+    alpnProtocols:
+      - http/1.1
+      - h2
     clientValidation:
       caCertificateRefs:
         - name: mtls-ca-bundle
@@ -42,6 +48,9 @@ spec:
       name: envoy
       sectionName: https-mtls-hmc
   tls:
+    alpnProtocols:
+      - http/1.1
+      - h2
     clientValidation:
       caCertificateRefs:
         - name: mtls-ca-bundle
@@ -58,6 +67,9 @@ spec:
       name: envoy
       sectionName: https-mtls-omni
   tls:
+    alpnProtocols:
+      - http/1.1
+      - h2
     clientValidation:
       caCertificateRefs:
         - name: mtls-ca-bundle
@@ -74,6 +86,9 @@ spec:
       name: envoy
       sectionName: https-mtls-oc
   tls:
+    alpnProtocols:
+      - http/1.1
+      - h2
     clientValidation:
       caCertificateRefs:
         - name: mtls-ca-bundle

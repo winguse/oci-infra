@@ -31,10 +31,19 @@ spec:
     - name: envoy
       namespace: gw
       sectionName: https
+    - name: envoy-quic
+      namespace: gw
+      sectionName: https
   hostnames:
     - {{ .Values.ingress.apiHost | quote }}
   rules:
-    - backendRefs:
+    - filters:
+        - type: ResponseHeaderModifier
+          responseHeaderModifier:
+            set:
+              - name: alt-svc
+                value: 'h3=":443"; ma=86400'
+      backendRefs:
         - name: {{ $fullName }}
           port: {{ .Values.service.apiPort }}
 {{- end }}

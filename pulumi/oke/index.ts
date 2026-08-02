@@ -374,15 +374,29 @@ const nodeSecurityList = new oci.core.SecurityList("oke-node-security-list", {
       protocol: "6", // TCP
       source: "0.0.0.0/0",
       sourceType: "CIDR_BLOCK",
-      tcpOptions: { min: 30122, max: 30122 },
-      description: "Allow Envoy Health Check NodePort",
+      tcpOptions: { min: 31345, max: 31345 },
+      description: "Allow Envoy QUIC Health NodePort",
     },
     {
       protocol: "6", // TCP
       source: "::/0",
       sourceType: "CIDR_BLOCK",
-      tcpOptions: { min: 30122, max: 30122 },
-      description: "Allow Envoy Health Check NodePort IPv6",
+      tcpOptions: { min: 31345, max: 31345 },
+      description: "Allow Envoy QUIC Health NodePort IPv6",
+    },
+    {
+      protocol: "17", // UDP
+      source: "0.0.0.0/0",
+      sourceType: "CIDR_BLOCK",
+      udpOptions: { min: 31344, max: 31344 },
+      description: "Allow Envoy HTTP/3 (QUIC) NodePort",
+    },
+    {
+      protocol: "17", // UDP
+      source: "::/0",
+      sourceType: "CIDR_BLOCK",
+      udpOptions: { min: 31344, max: 31344 },
+      description: "Allow Envoy HTTP/3 (QUIC) NodePort IPv6",
     },
     {
       protocol: "58", // ICMPv6
@@ -488,6 +502,184 @@ const nodePool = new oci.containerengine.NodePool("oke-nodepool", {
   sshPublicKey: sshKeys,
 });
 
+// Resolve worker node IP addresses (IPv4 + IPv6) for NLB backend sets.
+// Node pool nodes expose IPv4 via the nodepool; IPv6 is resolved through the
+// instance's VNIC attachments.
+const nodePoolLookup = oci.containerengine.getNodePoolOutput({
+  nodePoolId: nodePool.id,
+});
+// Only ACTIVE nodes become NLB backends: OKE nodepools keep DELETED nodes in
+// the `nodes` list after the autoscaler scales down, and a stale backend for a
+// terminated instance shows as a WARNING/unhealthy backend on the NLB.
+const activeNodes = nodePoolLookup.nodes.apply(nodes => nodes.filter(n => n.state === "ACTIVE"));
+const nodeIpv4s = activeNodes.apply(nodes =>
+  nodes.map(n => n.privateIp).filter(ip => ip && ip.length > 0)
+);
+const nodeIpv6s = pulumi.all([okeCompartment.id, activeNodes]).apply(async ([compartmentId, nodes]) => {
+  const ipv6s: string[] = [];
+  for (const node of nodes) {
+    const attachments = await oci.core.getVnicAttachments({
+      compartmentId: compartmentId,
+      instanceId: node.id,
+    });
+    for (const att of attachments.vnicAttachments || []) {
+      const vnic = await oci.core.getVnic({ vnicId: att.vnicId });
+      if (vnic.ipv6addresses && vnic.ipv6addresses.length > 0) {
+        ipv6s.push(vnic.ipv6addresses[0]);
+      }
+    }
+  }
+  return ipv6s;
+});
+
+// Single public dual-stack Network Load Balancer for all inbound traffic.
+// TCP-80/TCP-443 hit the main Envoy (HTTP/2, redirect + all routes incl. mTLS);
+// UDP-443 (QUIC) hits the dedicated HTTP/3 Envoy. One public IP for everything.
+const ingressNlb = new oci.networkloadbalancer.NetworkLoadBalancer("oke-ingress-nlb", {
+  compartmentId: okeCompartment.id,
+  displayName: "oke-ingress-nlb",
+  subnetId: lbSubnet.id,
+  subnetIpv6cidr: lbSubnet.ipv6cidrBlock,
+  isPrivate: false,
+  nlbIpVersion: "IPV4_AND_IPV6",
+});
+
+// Backend sets mirror the CCM pattern: one per IP version per port.
+// Policy FIVE_TUPLE + isPreserveSource=true match the CCM-managed NLBs.
+const healthCheckerTcp = (port: pulumi.Input<number>) => ({
+  protocol: "TCP",
+  port: port,
+  intervalInMillis: 10000,
+  retries: 3,
+  timeoutInMillis: 3000,
+});
+
+// NLB health checks must target TCP ports that respond on the node. The main
+// Envoy's data nodePorts (31080/31332) are TCP, so they are checked directly.
+// The QUIC Envoy's data nodePort (31344) is UDP-only (a TCP probe always fails),
+// so the quic EnvoyProxy exposes a dedicated TCP health nodePort (31345) mapped
+// to its readiness listener (19003).
+const HEALTH_CHECK_PORT_HTTP = 31080;
+const HEALTH_CHECK_PORT_HTTPS = 31332;
+const HEALTH_CHECK_PORT_QUIC = 31345;
+
+// Backends must be declared inline on the BackendSet (not as separate Backend
+// resources): updating a BackendSet requires the full backend list with ports,
+// and standalone Backend resources are not visible to that update call.
+const backendListV4 = (port: number): pulumi.Output<oci.types.input.NetworkLoadBalancer.NetworkLoadBalancersBackendSetsUnifiedBackend[]> =>
+  nodeIpv4s.apply(ips => ips.map(ip => ({ ipAddress: ip, port })));
+const backendListV6 = (port: number): pulumi.Output<oci.types.input.NetworkLoadBalancer.NetworkLoadBalancersBackendSetsUnifiedBackend[]> =>
+  nodeIpv6s.apply(ips => ips.map(ip => ({ ipAddress: ip, port })));
+
+// Backend sets (unified: inline backends) mirror the CCM pattern, one per IP
+// version per port. Using the unified resource (instead of BackendSet + separate
+// Backend resources) is required: updating a plain BackendSet's healthChecker
+// fails because it cannot see standalone Backend resources on the OCI side.
+const bsHttpV4 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSetsUnified("bs-http-v4", {
+  networkLoadBalancerId: ingressNlb.id,
+  name: "bs-http-v4",
+  policy: "FIVE_TUPLE",
+  isPreserveSource: true,
+  ipVersion: "IPV4",
+  healthChecker: healthCheckerTcp(HEALTH_CHECK_PORT_HTTP),
+  backends: backendListV4(31080),
+});
+const bsHttpV6 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSetsUnified("bs-http-v6", {
+  networkLoadBalancerId: ingressNlb.id,
+  name: "bs-http-v6",
+  policy: "FIVE_TUPLE",
+  isPreserveSource: true,
+  ipVersion: "IPV6",
+  healthChecker: healthCheckerTcp(HEALTH_CHECK_PORT_HTTP),
+  backends: backendListV6(31080),
+});
+const bsHttpsV4 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSetsUnified("bs-https-v4", {
+  networkLoadBalancerId: ingressNlb.id,
+  name: "bs-https-v4",
+  policy: "FIVE_TUPLE",
+  isPreserveSource: true,
+  ipVersion: "IPV4",
+  healthChecker: healthCheckerTcp(HEALTH_CHECK_PORT_HTTPS),
+  backends: backendListV4(31332),
+});
+const bsHttpsV6 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSetsUnified("bs-https-v6", {
+  networkLoadBalancerId: ingressNlb.id,
+  name: "bs-https-v6",
+  policy: "FIVE_TUPLE",
+  isPreserveSource: true,
+  ipVersion: "IPV6",
+  healthChecker: healthCheckerTcp(HEALTH_CHECK_PORT_HTTPS),
+  backends: backendListV6(31332),
+});
+const bsQuicV4 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSetsUnified("bs-quic-v4", {
+  networkLoadBalancerId: ingressNlb.id,
+  name: "bs-quic-v4",
+  policy: "FIVE_TUPLE",
+  isPreserveSource: true,
+  ipVersion: "IPV4",
+  healthChecker: healthCheckerTcp(HEALTH_CHECK_PORT_QUIC),
+  backends: backendListV4(31344),
+});
+const bsQuicV6 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSetsUnified("bs-quic-v6", {
+  networkLoadBalancerId: ingressNlb.id,
+  name: "bs-quic-v6",
+  policy: "FIVE_TUPLE",
+  isPreserveSource: true,
+  ipVersion: "IPV6",
+  healthChecker: healthCheckerTcp(HEALTH_CHECK_PORT_QUIC),
+  backends: backendListV6(31344),
+});
+
+// Listeners: one per protocol x IP version.
+const listenerHttpV4 = new oci.networkloadbalancer.Listener("listener-http-v4", {
+  networkLoadBalancerId: ingressNlb.id,
+  name: "http-v4",
+  protocol: "TCP",
+  port: 80,
+  defaultBackendSetName: bsHttpV4.name,
+  ipVersion: "IPV4",
+});
+const listenerHttpV6 = new oci.networkloadbalancer.Listener("listener-http-v6", {
+  networkLoadBalancerId: ingressNlb.id,
+  name: "http-v6",
+  protocol: "TCP",
+  port: 80,
+  defaultBackendSetName: bsHttpV6.name,
+  ipVersion: "IPV6",
+});
+const listenerHttpsV4 = new oci.networkloadbalancer.Listener("listener-https-v4", {
+  networkLoadBalancerId: ingressNlb.id,
+  name: "https-v4",
+  protocol: "TCP",
+  port: 443,
+  defaultBackendSetName: bsHttpsV4.name,
+  ipVersion: "IPV4",
+});
+const listenerHttpsV6 = new oci.networkloadbalancer.Listener("listener-https-v6", {
+  networkLoadBalancerId: ingressNlb.id,
+  name: "https-v6",
+  protocol: "TCP",
+  port: 443,
+  defaultBackendSetName: bsHttpsV6.name,
+  ipVersion: "IPV6",
+});
+const listenerQuicV4 = new oci.networkloadbalancer.Listener("listener-quic-v4", {
+  networkLoadBalancerId: ingressNlb.id,
+  name: "quic-v4",
+  protocol: "UDP",
+  port: 443,
+  defaultBackendSetName: bsQuicV4.name,
+  ipVersion: "IPV4",
+});
+const listenerQuicV6 = new oci.networkloadbalancer.Listener("listener-quic-v6", {
+  networkLoadBalancerId: ingressNlb.id,
+  name: "quic-v6",
+  protocol: "UDP",
+  port: 443,
+  defaultBackendSetName: bsQuicV6.name,
+  ipVersion: "IPV6",
+});
+
 // OCI Dynamic Group to identify OKE worker node instances in the compartment
 const autoscalerGroup = new oci.identity.DynamicGroup("oke-autoscaler-group", {
   compartmentId: compartmentId, // Must be tenancy ID
@@ -521,3 +713,5 @@ export const kubeconfigContent = cluster.id.apply(cid =>
     clusterId: cid,
   }).then(res => res.content)
 );
+export const ingressNlbId = ingressNlb.id;
+export const ingressNlbPublicIps = ingressNlb.ipAddresses;
