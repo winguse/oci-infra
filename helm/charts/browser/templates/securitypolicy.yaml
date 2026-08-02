@@ -19,6 +19,7 @@ spec:
       - Accept-Language
       - Cookie
       - Authorization
+      - X-Forwarded-For
       - X-Forwarded-Proto
       - X-Forwarded-Host
       - X-Forwarded-Uri
