@@ -1,4 +1,4 @@
-.PHONY: repos helm-apply helm-diff destroy acme-dns-secret hermes-secrets openclaw-secrets omniroute-secrets init-shared-db
+.PHONY: repos helm-apply helm-diff destroy nlb-sync acme-dns-secret hermes-secrets openclaw-secrets omniroute-secrets init-shared-db
 
 ENV ?=
 ENV_FILE ?= $(if $(ENV),.env.$(ENV),.env)
@@ -74,6 +74,13 @@ helm-diff: repos
 
 destroy:
 	$(HELMFILE) destroy
+
+# Reconcile the single ingress NLB backends after node pool scaling changes.
+# The pulumi NLB uses a static backend list (filtered to ACTIVE nodes at plan
+# time), so run this after adding/removing worker nodes.
+PULUMI_STACK ?= dev
+nlb-sync:
+	pulumi -C pulumi/oke up --stack $(PULUMI_STACK) --yes
 
 inspect-node-scale-log:
 	kubectl logs -n kube-system -l "app.kubernetes.io/name=oci-cluster-autoscaler,app.kubernetes.io/instance=cluster-autoscaler" --tail=100 -f
