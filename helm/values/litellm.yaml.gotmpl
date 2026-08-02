@@ -10,8 +10,7 @@ ingress:
         - path: /
           pathType: Prefix
   tls:
-    - secretName: {{ .Values.tls.commonSecretName | quote }}
-      hosts:
+    - hosts:
         - {{ .Values.litellm.domain | quote }}
 
 database:

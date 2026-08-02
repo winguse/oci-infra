@@ -16,9 +16,6 @@ ingress:
   domain: a.i.wingu.se
   annotations: {}
 
-tls:
-  commonSecretName: "common-tls"
-
 mtls:
   enabled: true
 

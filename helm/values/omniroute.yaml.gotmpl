@@ -8,9 +8,6 @@ ingress:
   dashboardAnnotations: {}
   apiAnnotations: {}
 
-tls:
-  commonSecretName: {{ .Values.tls.commonSecretName | quote }}
-
 mtls:
   enabled: {{ .Values.omniroute.mtlsEnabled }}
 

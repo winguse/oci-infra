@@ -21,7 +21,6 @@ spec:
   tls:
     - hosts:
         - {{ .Values.ingress.dashboardHost | quote }}
-      secretName: {{ .Values.tls.commonSecretName | quote }}
   rules:
     - host: {{ .Values.ingress.dashboardHost | quote }}
       http:
@@ -51,7 +50,6 @@ spec:
   tls:
     - hosts:
         - {{ .Values.ingress.apiHost | quote }}
-      secretName: {{ .Values.tls.commonSecretName | quote }}
   rules:
     - host: {{ .Values.ingress.apiHost | quote }}
       http:

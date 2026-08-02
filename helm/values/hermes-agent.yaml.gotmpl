@@ -14,13 +14,9 @@ ingress:
           pathType: Prefix
           portType: code-server
   tls:
-    - secretName: {{ .Values.tls.commonSecretName | quote }}
-      hosts:
+    - hosts:
         - {{ .Values.hermes.domain | quote }}
         - {{ .Values.hermes.codeServerDomain | quote }}
-
-tls:
-  commonSecretName: {{ .Values.tls.commonSecretName | quote }}
 
 existingSecret: "hermes-agent-secrets"
 

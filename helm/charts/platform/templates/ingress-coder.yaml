@@ -8,10 +8,8 @@ spec:
   tls:
     - hosts:
         - {{ .Values.coderDomain | quote }}
-      secretName: {{ .Values.tls.commonSecretName }}
     - hosts:
         - {{ .Values.tls.coderWildcardDomain | quote }}
-      secretName: {{ .Values.tls.coderSecretName }}
   rules:
     - host: {{ .Values.coderDomain | quote }}
       http:

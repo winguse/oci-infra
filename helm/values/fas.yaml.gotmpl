@@ -10,9 +10,6 @@ ingress:
   domain: {{ .Values.fas.domain | quote }}
   annotations: {}
 
-tls:
-  commonSecretName: {{ .Values.tls.commonSecretName | quote }}
-
 mtls:
   enabled: {{ .Values.fas.mtls.enabled }}
 

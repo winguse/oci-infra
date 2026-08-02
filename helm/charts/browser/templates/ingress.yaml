@@ -20,7 +20,6 @@ spec:
   tls:
     - hosts:
         - {{ .Values.ingress.domain | quote }}
-      secretName: {{ .Values.tls.commonSecretName | quote }}
   rules:
     - host: {{ .Values.ingress.domain | quote }}
       http:

@@ -20,9 +20,6 @@ ingress:
   dashboardAnnotations: {}
   apiAnnotations: {}
 
-tls:
-  commonSecretName: "common-tls"
-
 mtls:
   enabled: true
 

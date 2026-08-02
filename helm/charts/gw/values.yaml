@@ -1,3 +1,6 @@
+tlsAnchor:
+  enabled: true
+  ingressClassName: "traefik"
+
 tls:
   commonSecretName: common-tls
-  commonSecretNamespace: coder

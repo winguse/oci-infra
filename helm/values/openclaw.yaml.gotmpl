@@ -8,12 +8,8 @@ ingress:
         - path: /
           pathType: Prefix
   tls:
-    - secretName: {{ .Values.tls.commonSecretName | quote }}
-      hosts:
+    - hosts:
         - {{ .Values.openclaw.domain | quote }}
-
-tls:
-  commonSecretName: {{ .Values.tls.commonSecretName | quote }}
 
 mtls:
   enabled: {{ .Values.openclaw.mtls.enabled }}

@@ -1,10 +1,7 @@
 coderDomain: {{ .Values.coderDomain | quote }}
 
 tls:
-  commonWildcardDomain: {{ .Values.tls.commonWildcardDomain | quote }}
-  commonSecretName: {{ .Values.tls.commonSecretName | quote }}
   coderWildcardDomain: {{ .Values.tls.coderWildcardDomain | quote }}
-  coderSecretName: {{ .Values.tls.coderSecretName | quote }}
 
 acmeEmail: {{ .Values.acmeEmail | quote }}
 acmeServer: {{ .Values.acmeServer | quote }}

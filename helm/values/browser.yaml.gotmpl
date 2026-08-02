@@ -10,9 +10,6 @@ ingress:
   domain: {{ .Values.browser.domain | quote }}
   annotations: {}
 
-tls:
-  commonSecretName: {{ .Values.tls.commonSecretName | quote }}
-
 fas:
   enabled: true
   namespace: {{ .Values.browser.fas.namespace | quote }}

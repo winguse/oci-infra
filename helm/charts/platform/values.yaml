@@ -15,10 +15,7 @@ postgresql:
 coderDomain: ""
 
 tls:
-  commonWildcardDomain: ""
-  commonSecretName: ""
   coderWildcardDomain: ""
-  coderSecretName: ""
 
 acmeEmail: ""
 acmeServer: ""

@@ -113,9 +113,6 @@ secrets:
 mtls:
   enabled: false
 
-tls:
-  commonSecretName: "common-tls"
-
 resources: {}
   # We usually recommend at least 1-2 CPUs and 2-4 GiB memory due to Playwright and python runtimes
   # limits:

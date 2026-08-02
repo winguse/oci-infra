@@ -16,9 +16,6 @@ ingress:
   domain: s.i.wingu.se
   annotations: {}
 
-tls:
-  commonSecretName: "common-tls"
-
 fas:
   enabled: true
   namespace: "fas"
