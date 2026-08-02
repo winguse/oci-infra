@@ -93,6 +93,82 @@ spec:
       caCertificateRefs:
         - name: mtls-ca-bundle
 ---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  name: envoy-mtls-bw
+  namespace: {{ .Release.Namespace }}
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: envoy
+      sectionName: https-mtls-bw
+  tls:
+    alpnProtocols:
+      - http/1.1
+      - h2
+    clientValidation:
+      caCertificateRefs:
+        - name: mtls-ca-bundle
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  name: envoy-mtls-bw-api
+  namespace: {{ .Release.Namespace }}
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: envoy
+      sectionName: https-mtls-bw-api
+  tls:
+    alpnProtocols:
+      - http/1.1
+      - h2
+    clientValidation:
+      caCertificateRefs:
+        - name: mtls-ca-bundle
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  name: envoy-mtls-search
+  namespace: {{ .Release.Namespace }}
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: envoy
+      sectionName: https-mtls-search
+  tls:
+    alpnProtocols:
+      - http/1.1
+      - h2
+    clientValidation:
+      caCertificateRefs:
+        - name: mtls-ca-bundle
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  name: envoy-mtls-toggle
+  namespace: {{ .Release.Namespace }}
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: envoy
+      sectionName: https-mtls-toggle
+  tls:
+    alpnProtocols:
+      - http/1.1
+      - h2
+    clientValidation:
+      caCertificateRefs:
+        - name: mtls-ca-bundle
+---
 apiVersion: v1
 kind: Secret
 metadata:

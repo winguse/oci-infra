@@ -209,6 +209,86 @@ spec:
             name: {{ .Values.tls.coderSecretName | quote }}
             namespace: {{ .Release.Namespace | quote }}
           {{- end }}
+    - name: https-mtls-bw
+      protocol: HTTPS
+      port: 443
+      hostname: "bw.i.wingu.se"
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - group: ""
+            kind: Secret
+            name: {{ .Values.tls.commonSecretName | default "common-tls" | quote }}
+            namespace: {{ .Release.Namespace | quote }}
+          {{- if .Values.tls.coderSecretName }}
+          - group: ""
+            kind: Secret
+            name: {{ .Values.tls.coderSecretName | quote }}
+            namespace: {{ .Release.Namespace | quote }}
+          {{- end }}
+    - name: https-mtls-bw-api
+      protocol: HTTPS
+      port: 443
+      hostname: "bw-api.i.wingu.se"
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - group: ""
+            kind: Secret
+            name: {{ .Values.tls.commonSecretName | default "common-tls" | quote }}
+            namespace: {{ .Release.Namespace | quote }}
+          {{- if .Values.tls.coderSecretName }}
+          - group: ""
+            kind: Secret
+            name: {{ .Values.tls.coderSecretName | quote }}
+            namespace: {{ .Release.Namespace | quote }}
+          {{- end }}
+    - name: https-mtls-search
+      protocol: HTTPS
+      port: 443
+      hostname: "search.i.wingu.se"
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - group: ""
+            kind: Secret
+            name: {{ .Values.tls.commonSecretName | default "common-tls" | quote }}
+            namespace: {{ .Release.Namespace | quote }}
+          {{- if .Values.tls.coderSecretName }}
+          - group: ""
+            kind: Secret
+            name: {{ .Values.tls.coderSecretName | quote }}
+            namespace: {{ .Release.Namespace | quote }}
+          {{- end }}
+    - name: https-mtls-toggle
+      protocol: HTTPS
+      port: 443
+      hostname: "toggle.i.wingu.se"
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - group: ""
+            kind: Secret
+            name: {{ .Values.tls.commonSecretName | default "common-tls" | quote }}
+            namespace: {{ .Release.Namespace | quote }}
+          {{- if .Values.tls.coderSecretName }}
+          - group: ""
+            kind: Secret
+            name: {{ .Values.tls.coderSecretName | quote }}
+            namespace: {{ .Release.Namespace | quote }}
+          {{- end }}
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway

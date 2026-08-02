@@ -33,7 +33,7 @@ graph TD
         EP2["EnvoyProxy envoy-quic-config<br/>(UDP 31344 + health 31345)"] --> GWQ["Gateway envoy-quic"]
         GW --> LHTTP["http :80"]
         GW --> LHTTPS["https :443 catch-all"]
-        GW --> LMTLS["https-mtls-a | -hm | -hmc | -omni | -oc<br/>(a.i / hm.i / hmc.i / omni.i / oc.i)"]
+        GW --> LMTLS["https-mtls-a | -hm | -hmc | -omni | -oc<br/>https-mtls-bw | -bw-api | -search | -toggle<br/>(a.i / hm.i / hmc.i / omni.i / oc.i<br/>bw.i / bw-api.i / search.i / toggle.i)"]
         GWQ --> LQUIC["https :443 (HTTP/3, ClientTrafficPolicy http3)"]
     end
 
@@ -101,7 +101,7 @@ In this setup Envoy needs `443/TCP` (HTTP/2 + mTLS) and `443/UDP` (HTTP/3) to ta
 ## 4. Route split
 
 - **Public routes** (browser, litellm, omniroute API, platform coder): attach to **both** `envoy` (`https` section) and `envoy-quic` (`https` section), with an `alt-svc: h3=":443"; ma=86400` response header on the TCP route so browsers upgrade to HTTP/3 on the same IP.
-- **mTLS routes** (fas, hermes-agent dashboard, hermes codeserver, omniroute dashboard, openclaw): attach **only** to `envoy` `https-mtls-*` sections. Each section has a `ClientTrafficPolicy` (`clientValidation.caCertificateRefs: mtls-ca-bundle`) and explicit `alpnProtocols: [http/1.1, h2]`.
+- **mTLS routes** (fas, hermes-agent dashboard, hermes codeserver, omniroute dashboard, openclaw, camofox novnc/api, searxng, toggle-panel): attach **only** to `envoy` `https-mtls-*` sections. Each section has a `ClientTrafficPolicy` (`clientValidation.caCertificateRefs: mtls-ca-bundle`) and explicit `alpnProtocols: [http/1.1, h2]`.
 
 > **Pitfall**: overlapping hostnames (catch-all `https` + hostname-specific mTLS sections) set `TLSOverlaps`, which forces ALPN to `["http/1.1"]` **unless** `alpnProtocols` is explicitly set. Always set it on mTLS ClientTrafficPolicies.
 
