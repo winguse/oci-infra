@@ -1,6 +1,6 @@
 ingress:
   enabled: true
-  className: {{ dig "ingress" "className" "envoy" .Values | quote }}
+  className: {{ dig "ingress" "className" "traefik" .Values | quote }}
   annotations: {}
   hosts:
     - host: {{ .Values.openclaw.domain | quote }}
@@ -14,7 +14,6 @@ ingress:
 
 tls:
   commonSecretName: {{ .Values.tls.commonSecretName | quote }}
-  commonWildcardDomain: {{ .Values.tls.commonWildcardDomain | quote }}
 
 mtls:
   enabled: {{ .Values.openclaw.mtls.enabled }}

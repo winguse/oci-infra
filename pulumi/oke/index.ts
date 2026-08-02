@@ -399,6 +399,48 @@ const nodeSecurityList = new oci.core.SecurityList("oke-node-security-list", {
       description: "Allow Envoy HTTP/3 (QUIC) NodePort IPv6",
     },
     {
+      protocol: "6", // TCP
+      source: "0.0.0.0/0",
+      sourceType: "CIDR_BLOCK",
+      tcpOptions: { min: 32080, max: 32080 },
+      description: "Allow Traefik HTTP NodePort",
+    },
+    {
+      protocol: "6", // TCP
+      source: "::/0",
+      sourceType: "CIDR_BLOCK",
+      tcpOptions: { min: 32080, max: 32080 },
+      description: "Allow Traefik HTTP NodePort IPv6",
+    },
+    {
+      protocol: "6", // TCP
+      source: "0.0.0.0/0",
+      sourceType: "CIDR_BLOCK",
+      tcpOptions: { min: 32443, max: 32443 },
+      description: "Allow Traefik HTTPS NodePort",
+    },
+    {
+      protocol: "6", // TCP
+      source: "::/0",
+      sourceType: "CIDR_BLOCK",
+      tcpOptions: { min: 32443, max: 32443 },
+      description: "Allow Traefik HTTPS NodePort IPv6",
+    },
+    {
+      protocol: "17", // UDP
+      source: "0.0.0.0/0",
+      sourceType: "CIDR_BLOCK",
+      udpOptions: { min: 32443, max: 32443 },
+      description: "Allow Traefik HTTP/3 (QUIC) NodePort",
+    },
+    {
+      protocol: "17", // UDP
+      source: "::/0",
+      sourceType: "CIDR_BLOCK",
+      udpOptions: { min: 32443, max: 32443 },
+      description: "Allow Traefik HTTP/3 (QUIC) NodePort IPv6",
+    },
+    {
       protocol: "58", // ICMPv6
       source: "::/0",
       sourceType: "CIDR_BLOCK",

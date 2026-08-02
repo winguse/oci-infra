@@ -75,6 +75,9 @@ secrets: {}
 mtls:
   enabled: false
 
+tls:
+  commonSecretName: "common-tls"
+
 resources: {}
   # limits:
   #   cpu: 1000m

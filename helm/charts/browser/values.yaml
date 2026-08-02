@@ -12,7 +12,7 @@ service:
 
 ingress:
   enabled: true
-  className: "envoy"
+  className: "traefik"
   domain: s.i.wingu.se
   annotations: {}
 
@@ -33,10 +33,15 @@ resources:
 
 networkPolicy:
   enabled: true
-  ingressNamespaceLabels:
-    kubernetes.io/metadata.name: kube-system
-  ingressLabels:
-    app.kubernetes.io/name: envoy
+  ingressFrom:
+    - namespaceLabels:
+        kubernetes.io/metadata.name: kube-system
+      podLabels:
+        app.kubernetes.io/name: envoy
+    - namespaceLabels:
+        kubernetes.io/metadata.name: kube-system
+      podLabels:
+        app.kubernetes.io/name: traefik
   dnsNamespaceLabels:
     kubernetes.io/metadata.name: kube-system
   privateCidrsExcept:

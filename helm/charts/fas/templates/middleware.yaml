@@ -1,0 +1,13 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ include "fas.fullname" . }}-auth
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "fas.labels" . | nindent 4 }}
+spec:
+  forwardAuth:
+    address: {{ printf "http://%s.%s.svc.cluster.local:%d/_auth" (include "fas.fullname" .) .Release.Namespace (int .Values.service.port) }}
+    trustForwardHeader: true
+    authResponseHeaders:
+      - "Set-Cookie"

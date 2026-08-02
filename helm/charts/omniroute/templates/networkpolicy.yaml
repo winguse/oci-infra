@@ -19,17 +19,19 @@ spec:
           port: {{ .Values.service.apiPort }}
         - protocol: TCP
           port: {{ .Values.service.liveWsPort }}
-    # Allow dashboard port ONLY from Envoy
+    # Allow dashboard port ONLY from Envoy / Traefik
+    {{- range .Values.networkPolicy.ingressFrom }}
     - from:
         - namespaceSelector:
             matchLabels:
-              {{- toYaml .Values.networkPolicy.ingressNamespaceLabels | nindent 14 }}
+              {{- toYaml .namespaceLabels | nindent 14 }}
           podSelector:
             matchLabels:
-              {{- toYaml .Values.networkPolicy.ingressLabels | nindent 14 }}
+              {{- toYaml .podLabels | nindent 14 }}
       ports:
         - protocol: TCP
-          port: {{ .Values.service.dashboardPort }}
+          port: {{ $.Values.service.dashboardPort }}
+    {{- end }}
     # Allow local pod-to-pod/internal namespace communication on dashboard port
     - from:
         - podSelector: {}

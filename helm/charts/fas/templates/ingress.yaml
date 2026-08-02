@@ -1,0 +1,39 @@
+{{- if .Values.ingress.enabled -}}
+{{- $fullName := include "fas.fullname" . -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "fas.labels" . | nindent 4 }}
+  annotations:
+    {{- if .Values.mtls.enabled }}
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.tls.options: {{ printf "%s-%s-mtls@kubernetescrd" .Release.Namespace $fullName | quote }}
+    {{- end }}
+    {{- if .Values.sharedSecret }}
+    traefik.ingress.kubernetes.io/router.middlewares: {{ printf "%s-%s-shared-secret@kubernetescrd" .Release.Namespace $fullName | quote }}
+    {{- end }}
+    {{- with .Values.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  {{- if .Values.ingress.className }}
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- end }}
+  tls:
+    - hosts:
+        - {{ .Values.ingress.domain | quote }}
+      secretName: {{ .Values.tls.commonSecretName | quote }}
+  rules:
+    - host: {{ .Values.ingress.domain | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ $fullName }}
+                port:
+                  name: http
+{{- end }}

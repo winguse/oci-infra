@@ -14,17 +14,19 @@ spec:
     - Ingress
     - Egress
   ingress:
-    # Allow ingress ONLY from Envoy ingress proxy
+    # Allow ingress ONLY from Envoy / Traefik ingress proxies
+    {{- range .Values.networkPolicy.ingressFrom }}
     - from:
         - namespaceSelector:
             matchLabels:
-              {{- toYaml .Values.networkPolicy.ingressNamespaceLabels | nindent 14 }}
+              {{- toYaml .namespaceLabels | nindent 14 }}
           podSelector:
             matchLabels:
-              {{- toYaml .Values.networkPolicy.ingressLabels | nindent 14 }}
+              {{- toYaml .podLabels | nindent 14 }}
       ports:
         - protocol: TCP
-          port: {{ .Values.service.port }}
+          port: {{ $.Values.service.port }}
+    {{- end }}
     # Allow local pod-to-pod/internal namespace communication
     - from:
         - podSelector: {}

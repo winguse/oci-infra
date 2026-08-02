@@ -113,6 +113,9 @@ secrets:
 mtls:
   enabled: false
 
+tls:
+  commonSecretName: "common-tls"
+
 resources: {}
   # We usually recommend at least 1-2 CPUs and 2-4 GiB memory due to Playwright and python runtimes
   # limits:
@@ -147,7 +150,12 @@ codeServer:
 
 networkPolicy:
   enabled: false
-  ingressLabels:
-    app.kubernetes.io/name: envoy
-  ingressNamespaceLabels:
-    kubernetes.io/metadata.name: kube-system
+  ingressFrom:
+    - namespaceLabels:
+        kubernetes.io/metadata.name: kube-system
+      podLabels:
+        app.kubernetes.io/name: envoy
+    - namespaceLabels:
+        kubernetes.io/metadata.name: kube-system
+      podLabels:
+        app.kubernetes.io/name: traefik

@@ -2,7 +2,7 @@ replicaCount: {{ .Values.omniroute.replicaCount }}
 
 ingress:
   enabled: true
-  className: "envoy"
+  className: "traefik"
   dashboardHost: {{ .Values.omniroute.domain | quote }}
   apiHost: {{ .Values.omniroute.apiDomain | quote }}
   dashboardAnnotations: {}
@@ -10,7 +10,6 @@ ingress:
 
 tls:
   commonSecretName: {{ .Values.tls.commonSecretName | quote }}
-  commonWildcardDomain: {{ .Values.tls.commonWildcardDomain | quote }}
 
 mtls:
   enabled: {{ .Values.omniroute.mtlsEnabled }}

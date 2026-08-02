@@ -6,13 +6,12 @@ service:
 
 ingress:
   enabled: true
-  className: {{ dig "ingress" "className" "envoy" .Values | quote }}
+  className: {{ dig "ingress" "className" "traefik" .Values | quote }}
   domain: {{ .Values.browser.domain | quote }}
   annotations: {}
 
 tls:
   commonSecretName: {{ .Values.tls.commonSecretName | quote }}
-  commonWildcardDomain: {{ .Values.tls.commonWildcardDomain | quote }}
 
 fas:
   enabled: true
@@ -29,10 +28,15 @@ resources:
 
 networkPolicy:
   enabled: {{ dig "browser" "networkPolicy" "enabled" true .Values }}
-  ingressNamespaceLabels:
-    kubernetes.io/metadata.name: {{ dig "ingress" "namespace" "kube-system" .Values | quote }}
-  ingressLabels:
-    app.kubernetes.io/name: "envoy"
+  ingressFrom:
+    - namespaceLabels:
+        kubernetes.io/metadata.name: {{ dig "ingress" "namespace" "kube-system" .Values | quote }}
+      podLabels:
+        app.kubernetes.io/name: "envoy"
+    - namespaceLabels:
+        kubernetes.io/metadata.name: {{ dig "ingress" "namespace" "kube-system" .Values | quote }}
+      podLabels:
+        app.kubernetes.io/name: "traefik"
   dnsNamespaceLabels:
     kubernetes.io/metadata.name: "kube-system"
   privateCidrsExcept:

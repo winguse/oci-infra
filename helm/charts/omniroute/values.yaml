@@ -13,8 +13,8 @@ service:
   liveWsPort: 20132
 
 ingress:
-  enabled: false
-  className: "envoy"
+  enabled: true
+  className: "traefik"
   dashboardHost: omni.i.wingu.se
   apiHost: omni-api.i.wingu.se
   dashboardAnnotations: {}
@@ -65,7 +65,12 @@ affinity: {}
 
 networkPolicy:
   enabled: true
-  ingressLabels:
-    app.kubernetes.io/name: envoy
-  ingressNamespaceLabels:
-    kubernetes.io/metadata.name: kube-system
+  ingressFrom:
+    - namespaceLabels:
+        kubernetes.io/metadata.name: kube-system
+      podLabels:
+        app.kubernetes.io/name: envoy
+    - namespaceLabels:
+        kubernetes.io/metadata.name: kube-system
+      podLabels:
+        app.kubernetes.io/name: traefik

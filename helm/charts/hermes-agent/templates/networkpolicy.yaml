@@ -19,18 +19,20 @@ spec:
           port: {{ .Values.service.apiPort }}
         - protocol: TCP
           port: {{ .Values.service.dashboardPort }}
-    # Allow code-server port ONLY from Envoy
+    # Allow code-server port ONLY from Envoy / Traefik
     {{- if .Values.codeServer.enabled }}
+    {{- range .Values.networkPolicy.ingressFrom }}
     - from:
         - namespaceSelector:
             matchLabels:
-              {{- toYaml .Values.networkPolicy.ingressNamespaceLabels | nindent 14 }}
+              {{- toYaml .namespaceLabels | nindent 14 }}
           podSelector:
             matchLabels:
-              {{- toYaml .Values.networkPolicy.ingressLabels | nindent 14 }}
+              {{- toYaml .podLabels | nindent 14 }}
       ports:
         - protocol: TCP
-          port: {{ .Values.service.codeServerPort | default 8080 }}
+          port: {{ $.Values.service.codeServerPort | default 8080 }}
+    {{- end }}
     # Allow local pod-to-pod/internal communication on code-server port
     - from:
         - podSelector: {}
