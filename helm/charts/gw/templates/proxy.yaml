@@ -14,6 +14,16 @@
 # - EnvoyPatchPolicy remaps the basic-auth failure reply from 401 to 405 on
 #   the two `https` listeners: the basic_auth filter always returns 401 (it has
 #   no status override), so the HCM local_reply_config mapper rewrites it.
+#   technically, we should do 407 to follow the standard, but this is intended to
+#   405 to hide we are proxy
+# - Envoy Gateway's SecurityPolicy.basicAuth only exposes `users` and reads the
+#   credential from the `Authorization` header. For a forward proxy the standard
+#   (RFC 7235) is the `Proxy-Authorization` header. Envoy's basic_auth filter
+#   supports loading the credential from an arbitrary header via
+#   `authentication_header`, so the same EnvoyPatchPolicy adds it to the generated
+#   `envoy.filters.http.basic_auth/.../envoy-connect-proxy-auth` filter. NOTE: the
+#   patch targets the filter's fixed position (here index 4) in the HCM http_filters
+#   list, which shifts if more ext_authz/FAS filters are added to the listener.
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: Backend
 metadata:
@@ -101,6 +111,14 @@ spec:
                       default_value: 401
                       runtime_key: key_b
               status_code: 405
+    # Make the basic_auth filter read the credential from `Proxy-Authorization`
+    # (forward-proxy standard) instead of `Authorization`.
+    - type: "type.googleapis.com/envoy.config.listener.v3.Listener"
+      name: "{{ .Release.Namespace }}/envoy/https"
+      operation:
+        op: add
+        path: "/filter_chains/0/filters/0/typed_config/http_filters/4/typed_config/authentication_header"
+        value: "Proxy-Authorization"
 ---
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: EnvoyPatchPolicy
@@ -129,4 +147,12 @@ spec:
                       default_value: 401
                       runtime_key: key_b
               status_code: 405
+    # Proxy the basic_auth filter to read `Proxy-Authorization` (forward-proxy
+    # standard) instead of `Authorization`.
+    - type: "type.googleapis.com/envoy.config.listener.v3.Listener"
+      name: "{{ .Release.Namespace }}/envoy-quic/https"
+      operation:
+        op: add
+        path: "/filter_chains/0/filters/0/typed_config/http_filters/4/typed_config/authentication_header"
+        value: "Proxy-Authorization"
 {{- end }}
