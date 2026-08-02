@@ -55,11 +55,14 @@ graph TD
     subgraph APPS["HTTPRoutes (Envoy)"]
         HR_PUB["browser, litellm, omniroute-api, coder<br/>attach to envoy https + envoy-quic https<br/>(alt-svc h3 advertising)"]
         HR_MTLS["fas, hermes-agent, omniroute dashboard, openclaw<br/>attach to envoy https-mtls-* only"]
+        HR_PROXY["CONNECT forward proxy<br/>hostname-less on envoy https + envoy-quic https<br/>basicAuth, DynamicResolver, CONNECT terminate"]
     end
 
     GW --> HR_PUB
     GWQ --> HR_PUB
     GW --> HR_MTLS
+    GW --> HR_PROXY
+    GWQ --> HR_PROXY
 
     subgraph LEGACY["Ingresses (Traefik)"]
         ING_PUB["browser, litellm, omniroute, platform/coder"]
@@ -150,3 +153,18 @@ This means the whole Pulumi NLB setup can be retired:
   - DNS must move from the pulumi NLB IP (`170.9.16.247`) to the CCM-allocated NLB IP.
 
 Traefik remains only because its Gateway-API provider cannot do mTLS; apps that depend on the legacy Ingress path keep it.
+
+## 8. HTTPS CONNECT forward proxy (Envoy Gateway)
+
+The same Envoy Gateway serves as an authenticated forward proxy. External clients send `CONNECT host:port` (or plain HTTP requests, e.g. `GET http://...`) and Envoy dials the target directly. It reuses the existing port-443 listeners — **no NLB, security-list, or nodePort changes**.
+
+- **Dynamic Forward Proxy**: the `Backend` extension API (`gateway.envoyproxy.io/v1alpha1`, `spec.type: DynamicResolver`) resolves/connects the request's `:authority` (host:port) upstream at request time, so the proxy tunnels to *any* destination.
+- **CONNECT termination**: a `BackendTrafficPolicy` with `httpUpgrade: [{type: CONNECT, connect: {terminate: true}}]` turns Envoy into a raw TCP tunnel after the handshake.
+- **Transports**: the `HTTPRoute` attaches to the existing catch-all `https` listeners of **both** the `envoy` (TCP: HTTP/1.1 + HTTP/2) and `envoy-quic` (UDP: HTTP/3) gateways, giving clients HTTP/1.1, HTTP/2, and HTTP/3 with the same DNS name + port 443.
+- **Auth (no mTLS)**: a `SecurityPolicy.basicAuth` protects the route using the `proxy-auth` Secret (`.htpasswd` key, `{SHA}` format) in the `gw` namespace. Envoy Gateway's basic-auth filter reads only the `Authorization` header — clients must send it explicitly (e.g. `curl --proxy-header "Authorization: Basic <b64>" -x https://<proxy-host>:443 ...`), not `Proxy-Authorization`. The basic_auth filter always returns `401` on failure (no status override in its config); two `EnvoyPatchPolicy` resources (one per gateway) add an HCM `local_reply_config` mapper (`status_code EQ 401 → 405`) so the proxy instead answers **405 Method Not Allowed**.
+- **Chart wiring**:
+  - `helm/charts/gw/templates/proxy.yaml` — the `Backend`, `HTTPRoute`, `BackendTrafficPolicy`, `SecurityPolicy`, and the 401→405 `EnvoyPatchPolicy`es, gated on `proxy.enabled`.
+  - `helm/values/envoy.yaml` → `config.envoyGateway.extensionApis` — `enableBackend: true` (Backend API is **disabled by default** in Envoy Gateway) and `enableEnvoyPatchPolicy: true` (also disabled by default). Both require an Envoy Gateway restart.
+  - `helm/charts/gw/values.yaml` (`proxy.enabled`, default `false`) and `helm/environments/default.yaml.gotmpl` (`proxy.enabled: true`) → passed via `helm/values/gw.yaml.gotmpl`.
+  - `make proxy-secrets` creates/updates `proxy-auth` in the `gw` namespace from `PROXY_USERNAME` / `PROXY_PASSWORD` (`.env`, `.env.example` placeholders). It runs as a dependency of `make helm-apply`.
+- **Routing precedence**: the proxy HTTPRoute is hostname-less on the `https` listeners, so it acts as a default for unmatched hosts; existing hostname-specific routes (browser, litellm, etc.) keep precedence. CONNECT routes are only reachable on 443 (no HTTP/plaintext proxying on port 80).

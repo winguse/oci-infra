@@ -4,3 +4,6 @@ tlsAnchor:
 
 tls:
   commonSecretName: common-tls
+
+proxy:
+  enabled: false

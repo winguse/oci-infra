@@ -1,4 +1,4 @@
-.PHONY: repos helm-apply helm-diff destroy nlb-sync acme-dns-secret hermes-secrets openclaw-secrets omniroute-secrets init-shared-db
+.PHONY: repos helm-apply helm-diff destroy nlb-sync acme-dns-secret hermes-secrets openclaw-secrets omniroute-secrets proxy-secrets init-shared-db
 
 ENV ?=
 ENV_FILE ?= $(if $(ENV),.env.$(ENV),.env)
@@ -65,7 +65,20 @@ omniroute-secrets:
 init-shared-db:
 	chmod +x scripts/init-shared-db.py && ENV_FILE=$(ENV_FILE) ./scripts/init-shared-db.py
 
-helm-apply: acme-dns-secret hermes-secrets openclaw-secrets omniroute-secrets init-shared-db repos
+# Create/update the basic-auth .htpasswd secret used by the Envoy Gateway
+# HTTPS CONNECT forward proxy (SecurityPolicy.basicAuth in the gw chart).
+proxy-secrets:
+	kubectl get namespace gw >/dev/null 2>&1 || kubectl create namespace gw
+	$(LOAD_ENV) || true; \
+	PROXY_USER=$${PROXY_USERNAME:-proxy} && \
+	PROXY_SHA=$$(printf '%s' "$${PROXY_PASSWORD:-changeme}" | openssl dgst -sha1 -binary | base64) && \
+	printf '%s:{SHA}%s\n' "$$PROXY_USER" "$$PROXY_SHA" | \
+	kubectl create secret generic proxy-auth \
+		--namespace gw \
+		--from-file=.htpasswd=/dev/stdin \
+		--dry-run=client -o yaml | kubectl apply -f -
+
+helm-apply: acme-dns-secret hermes-secrets openclaw-secrets omniroute-secrets proxy-secrets init-shared-db repos
 	$(HELMFILE) sync
 
 # Requires helm-diff: helm plugin install https://github.com/databus23/helm-diff

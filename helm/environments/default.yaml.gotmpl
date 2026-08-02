@@ -20,6 +20,9 @@ postgresql:
       username: "litellm"
       password: {{ env "LITELLM_DB_PASSWORD" | default "litellm-pass" | quote }}
 
+proxy:
+  enabled: true
+
 acmeDNS:
   host: "https://challenge.winguse.workers.dev"
   secretName: acme-dns

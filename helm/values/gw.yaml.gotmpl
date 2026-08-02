@@ -3,3 +3,6 @@ tls:
   commonWildcardDomain: {{ .Values.tls.commonWildcardDomain | quote }}
   coderSecretName: {{ .Values.tls.coderSecretName | quote }}
   coderWildcardDomain: {{ .Values.tls.coderWildcardDomain | quote }}
+
+proxy:
+  enabled: {{ .Values.proxy.enabled }}

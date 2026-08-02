@@ -1,0 +1,132 @@
+{{- if .Values.proxy.enabled -}}
+# HTTPS CONNECT forward proxy served by Envoy Gateway.
+#
+# - Backend (DynamicResolver) turns Envoy into a Dynamic Forward Proxy: the
+#   CONNECT authority (host:port) is resolved/connected directly, so clients
+#   can tunnel to ANY upstream.
+# - HTTPRoute attaches to the existing catch-all `https` listeners of BOTH the
+#   `envoy` (TCP: HTTP/1.1 + HTTP/2) and `envoy-quic` (UDP: HTTP/3) gateways,
+#   so the proxy reuses port 443 with zero NLB changes and no mTLS.
+# - BackendTrafficPolicy enables CONNECT termination (raw TCP tunnel).
+# - SecurityPolicy.basicAuth protects the proxy; credentials live in the
+#   `proxy-auth` Secret (key .htpasswd, htpasswd {SHA} format), created by the
+#   `make proxy-secrets` target from PROXY_USERNAME / PROXY_PASSWORD (.env).
+# - EnvoyPatchPolicy remaps the basic-auth failure reply from 401 to 405 on
+#   the two `https` listeners: the basic_auth filter always returns 401 (it has
+#   no status override), so the HCM local_reply_config mapper rewrites it.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: envoy-forward-proxy
+  namespace: {{ .Release.Namespace }}
+spec:
+  type: DynamicResolver
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: envoy-connect-proxy
+  namespace: {{ .Release.Namespace }}
+spec:
+  parentRefs:
+    - name: envoy
+      namespace: {{ .Release.Namespace }}
+      sectionName: https
+    - name: envoy-quic
+      namespace: {{ .Release.Namespace }}
+      sectionName: https
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - group: gateway.envoyproxy.io
+          kind: Backend
+          name: envoy-forward-proxy
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: envoy-connect-proxy
+  namespace: {{ .Release.Namespace }}
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: envoy-connect-proxy
+  httpUpgrade:
+    - type: CONNECT
+      connect:
+        terminate: true
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: envoy-connect-proxy-auth
+  namespace: {{ .Release.Namespace }}
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: envoy-connect-proxy
+  basicAuth:
+    users:
+      name: proxy-auth
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyPatchPolicy
+metadata:
+  name: envoy-connect-proxy-auth-405
+  namespace: {{ .Release.Namespace }}
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: envoy
+  type: JSONPatch
+  jsonPatches:
+    - type: "type.googleapis.com/envoy.config.listener.v3.Listener"
+      name: "{{ .Release.Namespace }}/envoy/https"
+      operation:
+        op: add
+        path: "/filter_chains/0/filters/0/typed_config/local_reply_config"
+        value:
+          mappers:
+            - filter:
+                status_code_filter:
+                  comparison:
+                    op: EQ
+                    value:
+                      default_value: 401
+                      runtime_key: key_b
+              status_code: 405
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyPatchPolicy
+metadata:
+  name: envoy-quic-connect-proxy-auth-405
+  namespace: {{ .Release.Namespace }}
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: envoy-quic
+  type: JSONPatch
+  jsonPatches:
+    - type: "type.googleapis.com/envoy.config.listener.v3.Listener"
+      name: "{{ .Release.Namespace }}/envoy-quic/https"
+      operation:
+        op: add
+        path: "/filter_chains/0/filters/0/typed_config/local_reply_config"
+        value:
+          mappers:
+            - filter:
+                status_code_filter:
+                  comparison:
+                    op: EQ
+                    value:
+                      default_value: 401
+                      runtime_key: key_b
+              status_code: 405
+{{- end }}

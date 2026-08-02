@@ -1,3 +1,13 @@
+config:
+  envoyGateway:
+    # Enable the Backend extension API (gateway.envoyproxy.io/v1alpha1) used by
+    # the gw chart's HTTP CONNECT forward proxy (type: DynamicResolver).
+    extensionApis:
+      enableBackend: true
+      # Enable EnvoyPatchPolicy (used by the gw chart to remap the forward
+      # proxy's basic-auth 401 to 405 via HCM local_reply_config).
+      enableEnvoyPatchPolicy: true
+
 service:
   annotations:
     oci.oraclecloud.com/load-balancer-type: "nlb"
