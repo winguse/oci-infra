@@ -1,0 +1,173 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "h2o.fullname" . }}-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "h2o.labels" . | nindent 4 }}
+data:
+  h2o-preloads.rb: |
+    # Required by H2O mruby handler initialization (lib/handler/mruby.c)
+    module H2O
+      class ConfigurationContext
+        def self.instance()
+          @@instance
+        end
+        def self.reset()
+          @@instance = self.new()
+        end
+        def initialize()
+          @values = {}
+          @post_handler_generation_hooks = [
+            proc {|handler|
+              if !handler.respond_to?(:call)
+                raise "app is not callable"
+              end
+            }
+          ]
+        end
+        def get_value(key)
+          @values[key]
+        end
+        def set_value(key, value)
+          @values[key] = value
+        end
+        def delete_value(key)
+          @values[key].delete
+        end
+        def add_post_handler_generation_hook(hook)
+          @post_handler_generation_hooks << hook
+        end
+        def call_post_handler_generation_hooks(handler)
+          @post_handler_generation_hooks.each {|hook| hook.call(handler) }
+        end
+      end
+
+      module ACL
+        def acl(&block)
+          context = H2O::ConfigurationContext.instance
+          if context.get_value(:acl_handler) then
+            raise "acl can be called only once for each handler configuration"
+          end
+          acl_handler = ACLHandler.new(&block)
+          context.set_value(:acl_handler, acl_handler)
+          context.add_post_handler_generation_hook(proc {|handler|
+            if handler != acl_handler
+              raise "acl configuration is ignored"
+            end
+          })
+          return acl_handler
+        end
+
+        class ACLHandler
+          def initialize(&block)
+            @acl = []
+            instance_eval(&block)
+          end
+
+          def call(env)
+            @acl.each do |h|
+              res = h.call(env)
+              return res if res && res[0] != 399
+            end
+            return [399, {}, []]
+          end
+
+          def use(handler)
+            @acl << handler
+          end
+        end
+      end
+    end
+    include H2O::ACL
+
+  h2o-auth-fas.rb: |
+    # FAS (Forward Auth Service) Interceptor
+    Proc.new do |env|
+      # If request arrived on plain HTTP (port 8080), redirect to HTTPS
+      server_port = env["SERVER_PORT"].to_s
+      if server_port == "8080"
+        host = (env["HTTP_HOST"] || "").sub(/:8080\z/, "")
+        path_info = env["PATH_INFO"].to_s
+        query = env["QUERY_STRING"].to_s
+        target = "https://" + host + path_info
+        target += "?" + query unless query.empty?
+        $stderr.puts "[H2O-FAS] HTTP request on port 8080 -> Redirecting 301 to: #{target}"
+        [301, {"location" => target, "content-type" => "text/plain"}, ["Redirecting to HTTPS"]]
+      else
+        method = env["REQUEST_METHOD"] || "GET"
+        path_info = env["PATH_INFO"].to_s
+        target_path = path_info.start_with?("/") ? path_info : "/" + path_info
+        fas_url = "http://fas.fas.svc.cluster.local:8080/_auth" + target_path
+
+        client_ip = env["REMOTE_ADDR"] || ""
+        http_host = env["HTTP_HOST"] || ""
+
+        $stderr.puts "[H2O-FAS] >>> Received request: method=#{method} host=#{http_host} path=#{path_info} remote=#{client_ip}"
+
+        fas_headers = {}
+        env.each do |k, v|
+          if k.start_with?("HTTP_")
+            h_name = k[5..-1].downcase.tr("_", "-")
+            fas_headers[h_name] = v.to_s
+          end
+        end
+
+        fas_headers["x-forwarded-for"] = client_ip unless client_ip.empty?
+        fas_headers["x-forwarded-method"] = method
+        host = env["HTTP_X_FORWARDED_HOST"] || env["HTTP_HOST"] || ""
+        fas_headers["x-forwarded-host"] = host unless host.empty?
+
+        $stderr.puts "[H2O-FAS] Subrequest -> #{fas_url} (headers: #{fas_headers.keys.join(', ')})"
+        $stderr.puts "[H2O-FAS] Subrequest headers details: #{fas_headers.inspect}"
+
+        begin
+          subreq = http_request(fas_url, headers: fas_headers, method: "GET")
+          status, resp_headers, body = subreq.join
+          $stderr.puts "[H2O-FAS] Subrequest <- FAS Status: #{status}"
+          if status == 200
+            $stderr.puts "[H2O-FAS] Decision: ALLOW (delegating to proxy.connect with 399)"
+            [399, {}, []]
+          else
+            $stderr.puts "[H2O-FAS] Decision: DENY/CHALLENGE (returning #{status} to client)"
+            [status, resp_headers, body]
+          end
+        rescue => e
+          $stderr.puts "[H2O-FAS] Subrequest EXCEPTION: #{e.class}: #{e.message}"
+          [500, {"content-type" => "text/plain"}, ["FAS Subrequest Error: #{e.message}"]]
+        end
+      end
+    end
+
+  h2o.conf: |
+    user: nobody
+    num-threads: 2
+    proxy.ssl.cafile: /etc/ssl/certs/ca-certificates.crt
+
+    listen:
+      port: 8080
+    listen:
+      port: 8443
+      ssl:
+        certificate-file: /etc/h2o/tls/tls.crt
+        key-file: /etc/h2o/tls/tls.key
+    listen:
+      port: 8443
+      type: quic
+      ssl:
+        certificate-file: /etc/h2o/tls/tls.crt
+        key-file: /etc/h2o/tls/tls.key
+
+    hosts:
+      "*":
+        paths:
+          "/":
+            mruby.handler-file: /etc/h2o/h2o-auth-fas.rb
+            proxy.connect:
+              - "+*:80"
+              - "+*:443"
+              - "+*:53"
+            proxy.connect-udp:
+              - "+*:80"
+              - "+*:443"
+              - "+*:53"

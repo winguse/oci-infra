@@ -19,6 +19,11 @@ spec:
   tls:
     - hosts:
         - {{ .Values.tls.commonWildcardDomain | quote }}
+        {{- if .Values.tls.commonWildcardDomains }}
+        {{- range .Values.tls.commonWildcardDomains }}
+        - {{ . | quote }}
+        {{- end }}
+        {{- end }}
       secretName: {{ .Values.tls.commonSecretName }}
     - hosts:
         - {{ .Values.tls.coderWildcardDomain | quote }}

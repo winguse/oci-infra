@@ -1,6 +1,8 @@
 coderDomain: coder.i.wingu.se
 tls:
   commonWildcardDomain: "*.i.wingu.se"
+  commonWildcardDomains:
+    - "*.o.wingu.se"
   commonSecretName: common-tls
   coderWildcardDomain: "*.coder.i.wingu.se"
   coderSecretName: coder-tls
@@ -124,7 +126,7 @@ omniroute:
   namespace: "omniroute"
   domain: "omni.i.wingu.se"
   apiDomain: "omni-api.i.wingu.se"
-  replicaCount: 1
+  replicaCount: 0
   mtlsEnabled: true
   networkPolicy:
     enabled: true
@@ -148,3 +150,13 @@ browser:
     middlewareName: "fas-auth"
   networkPolicy:
     enabled: true
+
+h2o:
+  namespace: "h2o"
+  domain: "h2o.i.wingu.se"
+  replicaCount: 1
+  acl:
+    allowedPorts: "80, 443, 53"
+  networkPolicy:
+    enabled: true
+

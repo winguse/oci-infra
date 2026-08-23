@@ -427,18 +427,46 @@ const nodeSecurityList = new oci.core.SecurityList("oke-node-security-list", {
       description: "Allow Traefik HTTPS NodePort IPv6",
     },
     {
+      protocol: "6", // TCP
+      source: "0.0.0.0/0",
+      sourceType: "CIDR_BLOCK",
+      tcpOptions: { min: 32090, max: 32090 },
+      description: "Allow H2O HTTP NodePort",
+    },
+    {
+      protocol: "6", // TCP
+      source: "::/0",
+      sourceType: "CIDR_BLOCK",
+      tcpOptions: { min: 32090, max: 32090 },
+      description: "Allow H2O HTTP NodePort IPv6",
+    },
+    {
+      protocol: "6", // TCP
+      source: "0.0.0.0/0",
+      sourceType: "CIDR_BLOCK",
+      tcpOptions: { min: 32490, max: 32490 },
+      description: "Allow H2O HTTPS NodePort",
+    },
+    {
+      protocol: "6", // TCP
+      source: "::/0",
+      sourceType: "CIDR_BLOCK",
+      tcpOptions: { min: 32490, max: 32490 },
+      description: "Allow H2O HTTPS NodePort IPv6",
+    },
+    {
       protocol: "17", // UDP
       source: "0.0.0.0/0",
       sourceType: "CIDR_BLOCK",
-      udpOptions: { min: 32443, max: 32443 },
-      description: "Allow Traefik HTTP/3 (QUIC) NodePort",
+      udpOptions: { min: 32491, max: 32491 },
+      description: "Allow H2O HTTPS (QUIC) UDP NodePort",
     },
     {
       protocol: "17", // UDP
       source: "::/0",
       sourceType: "CIDR_BLOCK",
-      udpOptions: { min: 32443, max: 32443 },
-      description: "Allow Traefik HTTP/3 (QUIC) NodePort IPv6",
+      udpOptions: { min: 32491, max: 32491 },
+      description: "Allow H2O HTTPS (QUIC) UDP NodePort IPv6",
     },
     {
       protocol: "58", // ICMPv6

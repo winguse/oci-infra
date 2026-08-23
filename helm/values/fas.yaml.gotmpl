@@ -24,6 +24,8 @@ env:
   FAS_PORT: "8080"
   FAS_DATA_FILE: "/data/fas.jsonl"
   FAS_ACL_FILE: "/data/acl.yaml"
+  FAS_LOG_LEVEL: debug
+  FAS_TEAPOD_PATH: /teapod/
 
 sharedSecret: {{ env "FAS_SHARED_SECRET" | default "" | quote }}
 

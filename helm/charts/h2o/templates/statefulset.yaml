@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "h2o.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "h2o.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ include "h2o.fullname" . }}
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "h2o.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      labels:
+        {{- include "h2o.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml .Values.imagePullSecrets | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: h2o
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /usr/local/bin/h2o
+            - -c
+            - /etc/h2o/h2o.conf
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: https-tcp
+              containerPort: 8443
+              protocol: TCP
+            - name: https-udp
+              containerPort: 8443
+              protocol: UDP
+          volumeMounts:
+            - name: config
+              mountPath: /etc/h2o/h2o.conf
+              subPath: h2o.conf
+              readOnly: true
+            - name: config
+              mountPath: /etc/h2o/h2o-auth-fas.rb
+              subPath: h2o-auth-fas.rb
+              readOnly: true
+            - name: config
+              mountPath: /usr/local/share/h2o/mruby/preloads.rb
+              subPath: h2o-preloads.rb
+              readOnly: true
+            - name: tls
+              mountPath: /etc/h2o/tls
+              readOnly: true
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "h2o.fullname" . }}-config
+        - name: tls
+          secret:
+            secretName: {{ include "h2o.fullname" . }}-tls

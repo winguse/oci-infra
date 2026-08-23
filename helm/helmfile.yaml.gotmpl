@@ -180,6 +180,15 @@ releases:
     needs:
       - {{ .Values.fas.namespace }}/fas
 
+  - name: h2o
+    namespace: {{ .Values.h2o.namespace | quote }}
+    createNamespace: true
+    chart: ./charts/h2o
+    values:
+      - values/h2o.yaml.gotmpl
+    needs:
+      - cert-manager/cert-manager
+
   - name: system-patches
     namespace: kube-system
     chart: ./charts/system-patches

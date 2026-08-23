@@ -61,8 +61,9 @@ class Client(QuicConnectionProtocol):
 
 async def main():
     conf = QuicConfiguration(is_client=True, alpn_protocols=["h3"])
+    conf.server_name = os.environ.get("SNI_HOST", "h2o.i.wingu.se")
     conf.verify_mode = 0
-    print(f"connecting to {HOST}:{PORT} via QUIC...")
+    print(f"connecting to {HOST}:{PORT} (SNI={conf.server_name}) via QUIC...")
     async with connect(HOST, PORT, configuration=conf, create_protocol=Client) as client:
         sid = client.h3._quic.get_next_available_stream_id()
         client.h3.send_headers(

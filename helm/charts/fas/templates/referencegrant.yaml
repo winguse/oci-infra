@@ -13,6 +13,9 @@ spec:
     - group: gateway.envoyproxy.io
       kind: SecurityPolicy
       namespace: hermes-playground
+    - group: gateway.envoyproxy.io
+      kind: SecurityPolicy
+      namespace: h2o
   to:
     - group: ""
       kind: Service

@@ -1,0 +1,29 @@
+replicaCount: 1
+
+image:
+  repository: ghcr.io/winguse/h2o
+  tag: v20260804
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+domain: h2o.i.wingu.se
+
+acl:
+  allowedPorts: "80, 443, 53"
+
+service:
+  type: LoadBalancer
+  annotations:
+    oci.oraclecloud.com/load-balancer-type: "nlb"
+    oci-network-load-balancer.oraclecloud.com/is-preserve-source: "true"
+
+resources:
+  limits:
+    memory: 256Mi
+  requests:
+    cpu: 50m
+    memory: 64Mi
+
+networkPolicy:
+  enabled: true

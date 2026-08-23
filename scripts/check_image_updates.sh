@@ -189,6 +189,7 @@ process_image "platform"       "dockerhub" "cloudflare/cloudflared"         "clo
 process_image "presidio"       "mcr"       "presidio-analyzer"              "analyzer"   "semver"  "helm/charts/presidio/Chart.yaml"       "helm/charts/presidio/values.yaml"
 process_image "presidio"       "mcr"       "presidio-anonymizer"            "anonymizer" "semver"  ""                                      "helm/charts/presidio/values.yaml"
 process_image "system-patches" "dockerhub" "bitnami/kubectl"                "kubectl"    "latest"  ""                                      "helm/charts/system-patches/templates/job.yaml"
+process_image "h2o"            "ghcr"      "winguse/h2o"                    "tag"        "default" "helm/charts/h2o/Chart.yaml"            "helm/charts/h2o/values.yaml"
 process_image "valkey"         "dockerhub" "valkey/valkey"                  "tag"        "alpine"  "helm/charts/valkey/Chart.yaml"         "helm/charts/valkey/values.yaml"
 
 if [ "$MODE" = "update" ]; then

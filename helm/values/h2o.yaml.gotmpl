@@ -1,0 +1,14 @@
+domain: {{ .Values.h2o.domain | quote }}
+replicaCount: {{ .Values.h2o.replicaCount }}
+
+acl:
+  allowedPorts: {{ .Values.h2o.acl.allowedPorts | quote }}
+
+service:
+  type: LoadBalancer
+  annotations:
+    oci.oraclecloud.com/load-balancer-type: "nlb"
+    oci-network-load-balancer.oraclecloud.com/is-preserve-source: "true"
+
+networkPolicy:
+  enabled: {{ .Values.h2o.networkPolicy.enabled }}

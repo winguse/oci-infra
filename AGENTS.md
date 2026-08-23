@@ -20,6 +20,7 @@ do not read credentials file `.env`, when coding only use `.env.example`
 - **Config Initialization**: Requires configuration bootstrapping via an initContainer to run successfully.
 
 ## 4. Best Practices for Modifying the Project
+- **Workload Resource Type (StatefulSet vs Deployment)**: Prefer `StatefulSet` for service workloads across the cluster charts unless explicitly told otherwise.
 - **Linting**: Always validate local Helm chart templates using `helm lint helm/charts/<chart_name>` after updates.
 - **Configurations**: Propagate parameters from `default.yaml.gotmpl` down to the chart values via `helm/values/<chart>.yaml.gotmpl`.
 - **Image Registries**: All container images in Helm templates or values files must explicitly specify the registry/source host prefix.
@@ -108,5 +109,13 @@ do not read credentials file `.env`, when coding only use `.env.example`
   - **Pitfall (index fragility)**: the patch targets the filter's fixed position in the HCM `http_filters` list (currently index 4, after the FAS ext_authz filters). The index shifts if the count of ext_authz/FAS filters on the listener changes; then the patch fails to apply and the proxy breaks. If FAS policies change, update the `http_filters/4` index in `proxy.yaml`.
 - **401 → 405 remap**: The basic_auth filter always replies 401 on failure (no status override in its config). Two `EnvoyPatchPolicy` resources (one per gateway) add an HCM `local_reply_config` mapper (`status_code_filter EQ 401 → status_code: 405`) so the proxy answers 405 Method Not Allowed instead. Target listeners: `{{namespace}}/envoy/https` for the TCP gateway, `{{namespace}}/envoy-quic/https-quic` (UDP) for the QUIC gateway — never `.../envoy-quic/https`. (A true forward-proxy would return `407 Proxy Authentication Required`; the 405 is a deliberate existing choice.) This requires `config.envoyGateway.extensionApis.enableEnvoyPatchPolicy: true` in `helm/values/envoy.yaml`.
 - **Secret management**: `make proxy-secrets` (a dependency of `make helm-apply`) generates the `proxy-auth` Secret from `PROXY_USERNAME` / `PROXY_PASSWORD` in `.env` using `openssl dgst -sha1 -binary | base64` (byte-identical to Apache htpasswd `{SHA}`). Do not store htpasswd strings in chart values or git.
+
+## 14. H2O Proxy Deployment (CONNECT & UDP Proxying with Dedicated OCI NLB)
+- **Chart & Namespace**: Deployed via local Helm chart `helm/charts/h2o` as a `StatefulSet` into namespace `h2o` (configurable via `h2o.namespace`), using container image `ghcr.io/winguse/h2o:v20260804` (binary `/usr/local/bin/h2o`).
+- **Dedicated NodePorts & Security List Rules**: Uses fixed NodePorts `32090` (HTTP TCP), `32490` (HTTPS TCP), and `32491` (HTTPS UDP). Node Security List rules in `pulumi/oke/index.ts` open these ports to `0.0.0.0/0` and are synced to OCI via `make nlb-sync`.
+- **Cert-Manager Wildcard Certificate**: Cert-manager issues the wildcard certificate (`h2o-tls`, `*.i.wingu.se`) directly in the `h2o` namespace (`certificate.yaml`). H2O terminates TLS directly on port 8443 (TCP & UDP) using its native SSL engine.
+- **HTTP/1.1, HTTP/2, HTTP/3 (QUIC)**: H2O redirects all plain HTTP traffic on port 8080 to HTTPS (301 redirect), and terminates TLS HTTP/1.1, HTTP/2, and HTTP/3 (QUIC) on port 8443 (from NLB port 443 TCP and UDP). Proxying and CONNECT are only served over TLS.
+- **FAS Ruby Forward Auth Interceptor**: H2O uses an `mruby.handler-file` (`h2o-auth-fas.rb`) to intercept all incoming requests (HTTP and CONNECT methods). It extracts all client `HTTP_*` headers, sets `x-forwarded-for`, `x-forwarded-host`, and `x-forwarded-method`, and sends an asynchronous subrequest (`http_request`) to FAS (`http://fas.fas.svc.cluster.local:8080/_auth<PATH_INFO>`). If FAS returns `200 OK`, mruby returns `399` to delegate to `proxy.connect`; if FAS returns non-200 (e.g. `401`, `403`, `302`), mruby passes the FAS status, headers, and body directly to the client unmodified.
+
 
 

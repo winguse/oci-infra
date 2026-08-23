@@ -11,4 +11,9 @@ spec:
     kind: ClusterIssuer
   dnsNames:
     - {{ .Values.tls.commonWildcardDomain | quote }}
+    {{- if .Values.tls.commonWildcardDomains }}
+    {{- range .Values.tls.commonWildcardDomains }}
+    - {{ . | quote }}
+    {{- end }}
+    {{- end }}
 {{- end }}

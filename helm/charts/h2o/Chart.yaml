@@ -1,0 +1,6 @@
+apiVersion: v2
+name: h2o
+description: H2O HTTP/1.1, HTTP/2, HTTP/3 Proxy Server with CONNECT, CONNECT-UDP, and Auth support
+type: application
+version: 0.1.0
+appVersion: "v20260804"
