@@ -602,6 +602,13 @@ const nodeIpv6s = pulumi.all([okeCompartment.id, activeNodes]).apply(async ([com
   return ipv6s;
 });
 
+// Reserved Public IP for the main Ingress NLB (Envoy)
+const ingressReservedIp = new oci.core.PublicIp("oke-ingress-reserved-ip", {
+  compartmentId: okeCompartment.id,
+  displayName: "oke-ingress-reserved-ip",
+  lifetime: "RESERVED",
+});
+
 // Single public dual-stack Network Load Balancer for all inbound traffic.
 // TCP-80/TCP-443 hit the main Envoy (HTTP/2, redirect + all routes incl. mTLS);
 // UDP-443 (QUIC) hits the dedicated HTTP/3 Envoy. One public IP for everything.
@@ -612,7 +619,10 @@ const ingressNlb = new oci.networkloadbalancer.NetworkLoadBalancer("oke-ingress-
   subnetIpv6cidr: lbSubnet.ipv6cidrBlock,
   isPrivate: false,
   nlbIpVersion: "IPV4_AND_IPV6",
-});
+  reservedIps: [{
+    id: ingressReservedIp.id,
+  }],
+}, { deleteBeforeReplace: true });
 
 // Backend sets mirror the CCM pattern: one per IP version per port.
 // Policy FIVE_TUPLE + isPreserveSource=true match the CCM-managed NLBs.
@@ -653,7 +663,7 @@ const bsHttpV4 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSetsUnif
   ipVersion: "IPV4",
   healthChecker: healthCheckerTcp(HEALTH_CHECK_PORT_HTTP),
   backends: backendListV4(31080),
-});
+}, { deleteBeforeReplace: true });
 const bsHttpV6 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSetsUnified("bs-http-v6", {
   networkLoadBalancerId: ingressNlb.id,
   name: "bs-http-v6",
@@ -662,7 +672,7 @@ const bsHttpV6 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSetsUnif
   ipVersion: "IPV6",
   healthChecker: healthCheckerTcp(HEALTH_CHECK_PORT_HTTP),
   backends: backendListV6(31080),
-});
+}, { deleteBeforeReplace: true });
 const bsHttpsV4 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSetsUnified("bs-https-v4", {
   networkLoadBalancerId: ingressNlb.id,
   name: "bs-https-v4",
@@ -671,7 +681,7 @@ const bsHttpsV4 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSetsUni
   ipVersion: "IPV4",
   healthChecker: healthCheckerTcp(HEALTH_CHECK_PORT_HTTPS),
   backends: backendListV4(31332),
-});
+}, { deleteBeforeReplace: true });
 const bsHttpsV6 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSetsUnified("bs-https-v6", {
   networkLoadBalancerId: ingressNlb.id,
   name: "bs-https-v6",
@@ -680,7 +690,7 @@ const bsHttpsV6 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSetsUni
   ipVersion: "IPV6",
   healthChecker: healthCheckerTcp(HEALTH_CHECK_PORT_HTTPS),
   backends: backendListV6(31332),
-});
+}, { deleteBeforeReplace: true });
 const bsQuicV4 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSetsUnified("bs-quic-v4", {
   networkLoadBalancerId: ingressNlb.id,
   name: "bs-quic-v4",
@@ -689,7 +699,7 @@ const bsQuicV4 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSetsUnif
   ipVersion: "IPV4",
   healthChecker: healthCheckerTcp(HEALTH_CHECK_PORT_QUIC),
   backends: backendListV4(31344),
-});
+}, { deleteBeforeReplace: true });
 const bsQuicV6 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSetsUnified("bs-quic-v6", {
   networkLoadBalancerId: ingressNlb.id,
   name: "bs-quic-v6",
@@ -698,7 +708,7 @@ const bsQuicV6 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSetsUnif
   ipVersion: "IPV6",
   healthChecker: healthCheckerTcp(HEALTH_CHECK_PORT_QUIC),
   backends: backendListV6(31344),
-});
+}, { deleteBeforeReplace: true });
 
 // Listeners: one per protocol x IP version.
 const listenerHttpV4 = new oci.networkloadbalancer.Listener("listener-http-v4", {
@@ -708,7 +718,7 @@ const listenerHttpV4 = new oci.networkloadbalancer.Listener("listener-http-v4", 
   port: 80,
   defaultBackendSetName: bsHttpV4.name,
   ipVersion: "IPV4",
-});
+}, { deleteBeforeReplace: true, dependsOn: [bsHttpV4] });
 const listenerHttpV6 = new oci.networkloadbalancer.Listener("listener-http-v6", {
   networkLoadBalancerId: ingressNlb.id,
   name: "http-v6",
@@ -716,7 +726,7 @@ const listenerHttpV6 = new oci.networkloadbalancer.Listener("listener-http-v6", 
   port: 80,
   defaultBackendSetName: bsHttpV6.name,
   ipVersion: "IPV6",
-});
+}, { deleteBeforeReplace: true, dependsOn: [bsHttpV6] });
 const listenerHttpsV4 = new oci.networkloadbalancer.Listener("listener-https-v4", {
   networkLoadBalancerId: ingressNlb.id,
   name: "https-v4",
@@ -724,7 +734,7 @@ const listenerHttpsV4 = new oci.networkloadbalancer.Listener("listener-https-v4"
   port: 443,
   defaultBackendSetName: bsHttpsV4.name,
   ipVersion: "IPV4",
-});
+}, { deleteBeforeReplace: true, dependsOn: [bsHttpsV4] });
 const listenerHttpsV6 = new oci.networkloadbalancer.Listener("listener-https-v6", {
   networkLoadBalancerId: ingressNlb.id,
   name: "https-v6",
@@ -732,7 +742,7 @@ const listenerHttpsV6 = new oci.networkloadbalancer.Listener("listener-https-v6"
   port: 443,
   defaultBackendSetName: bsHttpsV6.name,
   ipVersion: "IPV6",
-});
+}, { deleteBeforeReplace: true, dependsOn: [bsHttpsV6] });
 const listenerQuicV4 = new oci.networkloadbalancer.Listener("listener-quic-v4", {
   networkLoadBalancerId: ingressNlb.id,
   name: "quic-v4",
@@ -740,7 +750,7 @@ const listenerQuicV4 = new oci.networkloadbalancer.Listener("listener-quic-v4", 
   port: 443,
   defaultBackendSetName: bsQuicV4.name,
   ipVersion: "IPV4",
-});
+}, { deleteBeforeReplace: true, dependsOn: [bsQuicV4] });
 const listenerQuicV6 = new oci.networkloadbalancer.Listener("listener-quic-v6", {
   networkLoadBalancerId: ingressNlb.id,
   name: "quic-v6",
@@ -748,6 +758,13 @@ const listenerQuicV6 = new oci.networkloadbalancer.Listener("listener-quic-v6", 
   port: 443,
   defaultBackendSetName: bsQuicV6.name,
   ipVersion: "IPV6",
+}, { deleteBeforeReplace: true, dependsOn: [bsQuicV6] });
+
+// Reserved Public IP for the H2O forward proxy NLB
+const h2oReservedIp = new oci.core.PublicIp("oke-h2o-reserved-ip", {
+  compartmentId: okeCompartment.id,
+  displayName: "oke-h2o-reserved-ip",
+  lifetime: "RESERVED",
 });
 
 // Single public dual-stack Network Load Balancer for H2O forward proxy.
@@ -759,7 +776,10 @@ const h2oNlb = new oci.networkloadbalancer.NetworkLoadBalancer("oke-h2o-nlb", {
   subnetIpv6cidr: lbSubnet.ipv6cidrBlock,
   isPrivate: false,
   nlbIpVersion: "IPV4_AND_IPV6",
-});
+  reservedIps: [{
+    id: h2oReservedIp.id,
+  }],
+}, { deleteBeforeReplace: true });
 
 const HEALTH_CHECK_PORT_H2O_HTTP = 32090;
 const HEALTH_CHECK_PORT_H2O_HTTPS = 32490;
@@ -772,7 +792,7 @@ const bsH2oHttpV4 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSetsU
   ipVersion: "IPV4",
   healthChecker: healthCheckerTcp(HEALTH_CHECK_PORT_H2O_HTTP),
   backends: backendListV4(32090),
-});
+}, { deleteBeforeReplace: true });
 const bsH2oHttpV6 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSetsUnified("bs-h2o-http-v6", {
   networkLoadBalancerId: h2oNlb.id,
   name: "bs-h2o-http-v6",
@@ -781,7 +801,7 @@ const bsH2oHttpV6 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSetsU
   ipVersion: "IPV6",
   healthChecker: healthCheckerTcp(HEALTH_CHECK_PORT_H2O_HTTP),
   backends: backendListV6(32090),
-});
+}, { deleteBeforeReplace: true });
 const bsH2oHttpsV4 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSetsUnified("bs-h2o-https-v4", {
   networkLoadBalancerId: h2oNlb.id,
   name: "bs-h2o-https-v4",
@@ -790,7 +810,7 @@ const bsH2oHttpsV4 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSets
   ipVersion: "IPV4",
   healthChecker: healthCheckerTcp(HEALTH_CHECK_PORT_H2O_HTTPS),
   backends: backendListV4(32490),
-});
+}, { deleteBeforeReplace: true });
 const bsH2oHttpsV6 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSetsUnified("bs-h2o-https-v6", {
   networkLoadBalancerId: h2oNlb.id,
   name: "bs-h2o-https-v6",
@@ -799,7 +819,7 @@ const bsH2oHttpsV6 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSets
   ipVersion: "IPV6",
   healthChecker: healthCheckerTcp(HEALTH_CHECK_PORT_H2O_HTTPS),
   backends: backendListV6(32490),
-});
+}, { deleteBeforeReplace: true });
 const bsH2oQuicV4 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSetsUnified("bs-h2o-quic-v4", {
   networkLoadBalancerId: h2oNlb.id,
   name: "bs-h2o-quic-v4",
@@ -808,7 +828,7 @@ const bsH2oQuicV4 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSetsU
   ipVersion: "IPV4",
   healthChecker: healthCheckerTcp(HEALTH_CHECK_PORT_H2O_HTTPS),
   backends: backendListV4(32491),
-});
+}, { deleteBeforeReplace: true });
 const bsH2oQuicV6 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSetsUnified("bs-h2o-quic-v6", {
   networkLoadBalancerId: h2oNlb.id,
   name: "bs-h2o-quic-v6",
@@ -817,7 +837,7 @@ const bsH2oQuicV6 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSetsU
   ipVersion: "IPV6",
   healthChecker: healthCheckerTcp(HEALTH_CHECK_PORT_H2O_HTTPS),
   backends: backendListV6(32491),
-});
+}, { deleteBeforeReplace: true });
 
 // H2O Listeners: one per protocol x IP version.
 const listenerH2oHttpV4 = new oci.networkloadbalancer.Listener("listener-h2o-http-v4", {
@@ -827,7 +847,7 @@ const listenerH2oHttpV4 = new oci.networkloadbalancer.Listener("listener-h2o-htt
   port: 80,
   defaultBackendSetName: bsH2oHttpV4.name,
   ipVersion: "IPV4",
-});
+}, { deleteBeforeReplace: true, dependsOn: [bsH2oHttpV4] });
 const listenerH2oHttpV6 = new oci.networkloadbalancer.Listener("listener-h2o-http-v6", {
   networkLoadBalancerId: h2oNlb.id,
   name: "http-v6",
@@ -835,7 +855,7 @@ const listenerH2oHttpV6 = new oci.networkloadbalancer.Listener("listener-h2o-htt
   port: 80,
   defaultBackendSetName: bsH2oHttpV6.name,
   ipVersion: "IPV6",
-});
+}, { deleteBeforeReplace: true, dependsOn: [bsH2oHttpV6] });
 const listenerH2oHttpsV4 = new oci.networkloadbalancer.Listener("listener-h2o-https-v4", {
   networkLoadBalancerId: h2oNlb.id,
   name: "https-v4",
@@ -843,7 +863,7 @@ const listenerH2oHttpsV4 = new oci.networkloadbalancer.Listener("listener-h2o-ht
   port: 443,
   defaultBackendSetName: bsH2oHttpsV4.name,
   ipVersion: "IPV4",
-});
+}, { deleteBeforeReplace: true, dependsOn: [bsH2oHttpsV4] });
 const listenerH2oHttpsV6 = new oci.networkloadbalancer.Listener("listener-h2o-https-v6", {
   networkLoadBalancerId: h2oNlb.id,
   name: "https-v6",
@@ -851,7 +871,7 @@ const listenerH2oHttpsV6 = new oci.networkloadbalancer.Listener("listener-h2o-ht
   port: 443,
   defaultBackendSetName: bsH2oHttpsV6.name,
   ipVersion: "IPV6",
-});
+}, { deleteBeforeReplace: true, dependsOn: [bsH2oHttpsV6] });
 const listenerH2oQuicV4 = new oci.networkloadbalancer.Listener("listener-h2o-quic-v4", {
   networkLoadBalancerId: h2oNlb.id,
   name: "quic-v4",
@@ -859,7 +879,7 @@ const listenerH2oQuicV4 = new oci.networkloadbalancer.Listener("listener-h2o-qui
   port: 443,
   defaultBackendSetName: bsH2oQuicV4.name,
   ipVersion: "IPV4",
-});
+}, { deleteBeforeReplace: true, dependsOn: [bsH2oQuicV4] });
 const listenerH2oQuicV6 = new oci.networkloadbalancer.Listener("listener-h2o-quic-v6", {
   networkLoadBalancerId: h2oNlb.id,
   name: "quic-v6",
@@ -867,7 +887,7 @@ const listenerH2oQuicV6 = new oci.networkloadbalancer.Listener("listener-h2o-qui
   port: 443,
   defaultBackendSetName: bsH2oQuicV6.name,
   ipVersion: "IPV6",
-});
+}, { deleteBeforeReplace: true, dependsOn: [bsH2oQuicV6] });
 
 // OCI Dynamic Group to identify OKE worker node instances in the compartment
 const autoscalerGroup = new oci.identity.DynamicGroup("oke-autoscaler-group", {
@@ -904,5 +924,7 @@ export const kubeconfigContent = cluster.id.apply(cid =>
 );
 export const ingressNlbId = ingressNlb.id;
 export const ingressNlbPublicIps = ingressNlb.ipAddresses;
+export const ingressReservedIpAddress = ingressReservedIp.ipAddress;
 export const h2oNlbId = h2oNlb.id;
 export const h2oNlbPublicIps = h2oNlb.ipAddresses;
+export const h2oReservedIpAddress = h2oReservedIp.ipAddress;
