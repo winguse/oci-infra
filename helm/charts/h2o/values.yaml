@@ -13,10 +13,8 @@ acl:
   allowedPorts: "80, 443, 53"
 
 service:
-  type: LoadBalancer
-  annotations:
-    oci.oraclecloud.com/load-balancer-type: "nlb"
-    oci-network-load-balancer.oraclecloud.com/is-preserve-source: "true"
+  type: NodePort
+  annotations: {}
 
 resources:
   limits:

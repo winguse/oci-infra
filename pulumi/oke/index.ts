@@ -750,6 +750,125 @@ const listenerQuicV6 = new oci.networkloadbalancer.Listener("listener-quic-v6", 
   ipVersion: "IPV6",
 });
 
+// Single public dual-stack Network Load Balancer for H2O forward proxy.
+// Splits TCP-80, TCP-443, and UDP-443 (HTTP/3 QUIC) cleanly using unified backend sets.
+const h2oNlb = new oci.networkloadbalancer.NetworkLoadBalancer("oke-h2o-nlb", {
+  compartmentId: okeCompartment.id,
+  displayName: "oke-h2o-nlb",
+  subnetId: lbSubnet.id,
+  subnetIpv6cidr: lbSubnet.ipv6cidrBlock,
+  isPrivate: false,
+  nlbIpVersion: "IPV4_AND_IPV6",
+});
+
+const HEALTH_CHECK_PORT_H2O_HTTP = 32090;
+const HEALTH_CHECK_PORT_H2O_HTTPS = 32490;
+
+const bsH2oHttpV4 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSetsUnified("bs-h2o-http-v4", {
+  networkLoadBalancerId: h2oNlb.id,
+  name: "bs-h2o-http-v4",
+  policy: "FIVE_TUPLE",
+  isPreserveSource: true,
+  ipVersion: "IPV4",
+  healthChecker: healthCheckerTcp(HEALTH_CHECK_PORT_H2O_HTTP),
+  backends: backendListV4(32090),
+});
+const bsH2oHttpV6 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSetsUnified("bs-h2o-http-v6", {
+  networkLoadBalancerId: h2oNlb.id,
+  name: "bs-h2o-http-v6",
+  policy: "FIVE_TUPLE",
+  isPreserveSource: true,
+  ipVersion: "IPV6",
+  healthChecker: healthCheckerTcp(HEALTH_CHECK_PORT_H2O_HTTP),
+  backends: backendListV6(32090),
+});
+const bsH2oHttpsV4 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSetsUnified("bs-h2o-https-v4", {
+  networkLoadBalancerId: h2oNlb.id,
+  name: "bs-h2o-https-v4",
+  policy: "FIVE_TUPLE",
+  isPreserveSource: true,
+  ipVersion: "IPV4",
+  healthChecker: healthCheckerTcp(HEALTH_CHECK_PORT_H2O_HTTPS),
+  backends: backendListV4(32490),
+});
+const bsH2oHttpsV6 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSetsUnified("bs-h2o-https-v6", {
+  networkLoadBalancerId: h2oNlb.id,
+  name: "bs-h2o-https-v6",
+  policy: "FIVE_TUPLE",
+  isPreserveSource: true,
+  ipVersion: "IPV6",
+  healthChecker: healthCheckerTcp(HEALTH_CHECK_PORT_H2O_HTTPS),
+  backends: backendListV6(32490),
+});
+const bsH2oQuicV4 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSetsUnified("bs-h2o-quic-v4", {
+  networkLoadBalancerId: h2oNlb.id,
+  name: "bs-h2o-quic-v4",
+  policy: "FIVE_TUPLE",
+  isPreserveSource: true,
+  ipVersion: "IPV4",
+  healthChecker: healthCheckerTcp(HEALTH_CHECK_PORT_H2O_HTTPS),
+  backends: backendListV4(32491),
+});
+const bsH2oQuicV6 = new oci.networkloadbalancer.NetworkLoadBalancersBackendSetsUnified("bs-h2o-quic-v6", {
+  networkLoadBalancerId: h2oNlb.id,
+  name: "bs-h2o-quic-v6",
+  policy: "FIVE_TUPLE",
+  isPreserveSource: true,
+  ipVersion: "IPV6",
+  healthChecker: healthCheckerTcp(HEALTH_CHECK_PORT_H2O_HTTPS),
+  backends: backendListV6(32491),
+});
+
+// H2O Listeners: one per protocol x IP version.
+const listenerH2oHttpV4 = new oci.networkloadbalancer.Listener("listener-h2o-http-v4", {
+  networkLoadBalancerId: h2oNlb.id,
+  name: "http-v4",
+  protocol: "TCP",
+  port: 80,
+  defaultBackendSetName: bsH2oHttpV4.name,
+  ipVersion: "IPV4",
+});
+const listenerH2oHttpV6 = new oci.networkloadbalancer.Listener("listener-h2o-http-v6", {
+  networkLoadBalancerId: h2oNlb.id,
+  name: "http-v6",
+  protocol: "TCP",
+  port: 80,
+  defaultBackendSetName: bsH2oHttpV6.name,
+  ipVersion: "IPV6",
+});
+const listenerH2oHttpsV4 = new oci.networkloadbalancer.Listener("listener-h2o-https-v4", {
+  networkLoadBalancerId: h2oNlb.id,
+  name: "https-v4",
+  protocol: "TCP",
+  port: 443,
+  defaultBackendSetName: bsH2oHttpsV4.name,
+  ipVersion: "IPV4",
+});
+const listenerH2oHttpsV6 = new oci.networkloadbalancer.Listener("listener-h2o-https-v6", {
+  networkLoadBalancerId: h2oNlb.id,
+  name: "https-v6",
+  protocol: "TCP",
+  port: 443,
+  defaultBackendSetName: bsH2oHttpsV6.name,
+  ipVersion: "IPV6",
+});
+const listenerH2oQuicV4 = new oci.networkloadbalancer.Listener("listener-h2o-quic-v4", {
+  networkLoadBalancerId: h2oNlb.id,
+  name: "quic-v4",
+  protocol: "UDP",
+  port: 443,
+  defaultBackendSetName: bsH2oQuicV4.name,
+  ipVersion: "IPV4",
+});
+const listenerH2oQuicV6 = new oci.networkloadbalancer.Listener("listener-h2o-quic-v6", {
+  networkLoadBalancerId: h2oNlb.id,
+  name: "quic-v6",
+  protocol: "UDP",
+  port: 443,
+  defaultBackendSetName: bsH2oQuicV6.name,
+  ipVersion: "IPV6",
+});
+
 // OCI Dynamic Group to identify OKE worker node instances in the compartment
 const autoscalerGroup = new oci.identity.DynamicGroup("oke-autoscaler-group", {
   compartmentId: compartmentId, // Must be tenancy ID
@@ -785,3 +904,5 @@ export const kubeconfigContent = cluster.id.apply(cid =>
 );
 export const ingressNlbId = ingressNlb.id;
 export const ingressNlbPublicIps = ingressNlb.ipAddresses;
+export const h2oNlbId = h2oNlb.id;
+export const h2oNlbPublicIps = h2oNlb.ipAddresses;

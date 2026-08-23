@@ -83,20 +83,26 @@ curl -v --proxy-http2 \
 
 ---
 
-### C. HTTP/3 (QUIC) In-Cluster & External Analysis
+### C. HTTP/3 (QUIC) In-Cluster & Dedicated Pulumi NLB Analysis
 
-1. **Direct In-Cluster Pod Test** (`10.244.0.249:8443` with `type: quic`):
-   ```python
-   # Result from in-cluster aioquic test:
-   connecting to 10.244.0.249:8443 via QUIC...
-     [h3] HEADERS status=b'200'
-   sending tunneled GET...
-     [h3] DATA(+0): b''
-     [h3] tunneled data timeout (no bytes relayed)
-   ```
-   * Authentication via FAS over QUIC succeeds (`status 200`), but H2O 2.3.0-DEV does not relay bidirectional payload frames for HTTP/3 CONNECT tunnels.
-2. **External NLB Path** (`h2o.i.wingu.se:443`):
-   * OCI Cloud Controller Manager limitation (oracle/oci-cloud-controller-manager#532): when a Kubernetes Service specifies both `TCP 443` and `UDP 443`, the auto-provisioned OCI NLB drops the UDP listener.
+1. **Dedicated Pulumi OCI NLB Path (`oke-h2o-nlb` on `150.230.44.55:443`)**:
+   * Resolved the OCI CCM limitation (`oracle/oci-cloud-controller-manager#532`) by provisioning a dedicated dual-stack OCI NLB via Pulumi (`oke-h2o-nlb`).
+   * Explicitly exposes UDP port 443 mapped to NodePort 32491, enabling public UDP/QUIC ingress directly.
+   * **Live Test Output via `aioquic`**:
+     ```python
+     connecting to 150.230.44.55:443 (SNI=h2o.i.wingu.se) via QUIC...
+       [quic] stream 0 data_end=False
+       [h3] HEADERS status=b'200'
+     sending tunneled GET...
+       [h3] DATA(+0): b''
+       [h3] tunneled data timeout (no bytes relayed)
+
+     ===== RESULT =====
+     HTTP/3 CONNECT status: b'200'
+     HTTP/3 tunneled bytes received: 0
+     HTTP/3 CONNECT tunnels data = False
+     ```
+   * **Result**: Public UDP 443 network routing, QUIC handshake, TLS SNI negotiation, and FAS authentication all succeed (`HTTP/3 200`). However, like Envoy, H2O's current HTTP/3 engine acknowledges CONNECT requests with `200` but does not relay tunneled stream bytes.
 
 ---
 
