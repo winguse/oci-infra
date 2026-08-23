@@ -158,9 +158,9 @@ Traefik runs in `kube-system` as the secondary/legacy ingress provider:
 - **Dedicated StatefulSet**: Deployed in namespace `h2o` with native TLS wildcard termination (`*.i.wingu.se`).
 - **FAS Authentication via mruby**: Intercepts requests using an asynchronous subrequest (`http_request`) to FAS (`http://fas.fas.svc.cluster.local:8080/_auth`). Returns `399` on success to delegate to `proxy.connect`.
 - **Protocol Support**:
-  - **HTTP/2 CONNECT**: Fully operational with client proxy authentication and raw TCP tunneling.
+  - **HTTP/2 CONNECT**: Fully operational with client proxy authentication, raw TCP socket bridging, and bidirectional tunneling.
+  - **HTTP/3 (QUIC) CONNECT**: Fully operational with client proxy authentication and end-to-end bidirectional payload tunneling over QUIC data streams.
   - **HTTP/1.1 Forward Proxy**: Cleartext forward proxying (`GET http://...`) authenticates and tunnels. HTTP/1.1 `CONNECT` with intermediate mruby is blocked by H2O's engine requirement for direct socket takeover.
-  - **HTTP/3 (QUIC)**: Public UDP 443 routing, QUIC handshake, and FAS auth all succeed (`HTTP/3 200`).
 
 ## 8. HTTPS CONNECT Forward Proxy (Envoy Gateway)
 
