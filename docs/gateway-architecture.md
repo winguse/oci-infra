@@ -19,6 +19,7 @@ Current multi control-plane topology: **Envoy Gateway** (Gateway API, HTTP/2 + H
 - **Dedicated Reserved Public IPs**:
   - Main Ingress NLB (`oke-ingress-nlb`): `165.1.66.129` (IPv4) & `2603:c024:c016:5903:0:18cf:6cf5:204c` (IPv6).
   - H2O Proxy NLB (`oke-h2o-nlb`): `163.192.34.161` (IPv4) & `2603:c024:c016:5903:0:ab12:3bde:2607` (IPv6).
+  - Traefik Ingress NLB (`kube-system/traefik`): `147.224.11.31` (IPv4) & `2603:c024:c016:5903:0:da03:d167:18c6` (IPv6).
 
 ```mermaid
 graph TD

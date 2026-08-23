@@ -767,6 +767,13 @@ const h2oReservedIp = new oci.core.PublicIp("oke-h2o-reserved-ip", {
   lifetime: "RESERVED",
 });
 
+// Reserved Public IP for Traefik Ingress (CCM LoadBalancer Service)
+const traefikReservedIp = new oci.core.PublicIp("oke-traefik-reserved-ip", {
+  compartmentId: okeCompartment.id,
+  displayName: "oke-traefik-reserved-ip",
+  lifetime: "RESERVED",
+});
+
 // Single public dual-stack Network Load Balancer for H2O forward proxy.
 // Splits TCP-80, TCP-443, and UDP-443 (HTTP/3 QUIC) cleanly using unified backend sets.
 const h2oNlb = new oci.networkloadbalancer.NetworkLoadBalancer("oke-h2o-nlb", {
@@ -928,3 +935,4 @@ export const ingressReservedIpAddress = ingressReservedIp.ipAddress;
 export const h2oNlbId = h2oNlb.id;
 export const h2oNlbPublicIps = h2oNlb.ipAddresses;
 export const h2oReservedIpAddress = h2oReservedIp.ipAddress;
+export const traefikReservedIpAddress = traefikReservedIp.ipAddress;

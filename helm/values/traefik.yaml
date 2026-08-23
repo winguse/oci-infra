@@ -28,6 +28,7 @@ service:
   annotations:
     oci.oraclecloud.com/load-balancer-type: "nlb"
     oci-network-load-balancer.oraclecloud.com/is-preserve-source: "true"
+    oci.oraclecloud.com/reserved-ips: "147.224.11.31"
   spec:
     externalTrafficPolicy: Local
     healthCheckNodePort: 30123
